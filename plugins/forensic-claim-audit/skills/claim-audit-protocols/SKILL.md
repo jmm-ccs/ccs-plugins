@@ -243,6 +243,7 @@ Each stage carries the **macro-areas as sub-points** (per §2.8 — the same are
 # Audit Progress
 
 **Mode:** multi-session  <!-- single-session | multi-session — see §2.7 -->
+**Languages:** English  <!-- English | English + Spanish — see §2.11 -->
 
 ## 1. Scope Audit — Not started
 
@@ -269,7 +270,9 @@ No clock timestamps in this file. The `Status` is the timeline — adjacent entr
 
 The `**Mode:**` line is the toggle described in §2.7. Stages read it at the end-of-stage gate to decide whether to chain in this same chat (single-session) or hand off to a fresh chat in the same project (multi-session). Stage skills update only the table rows; the Mode line is written by `claim-audit-setup` (sets `multi-session`) and re-checked by `forensic-claim-audit` at invocation (which asks the user before changing it).
 
-If `outputs/audit-progress.md` already exists when a stage skill or the orchestrator starts, do **not** rewrite it — read it as-is, preserving the current Mode line and any in-progress rows.
+The `**Languages:**` line is the bilingual toggle described in §2.11. It controls whether suggestions are presented in English only or in English + Spanish, and — like Mode — it persists across chats for the whole project. Default is `English`; treat a missing or unrecognized value as English-only. Stage skills never change it; only `claim-bilingual-mode` writes it. Read it at the same time you read the Mode line.
+
+If `outputs/audit-progress.md` already exists when a stage skill or the orchestrator starts, do **not** rewrite it — read it as-is, preserving the current Mode and Languages lines and any in-progress rows.
 
 If the live artifact (id `claim-audit-progress`) doesn't exist, build the artifact HTML by reading the template at `forensic-claim-audit/assets/audit-progress-artifact.html` and making **two** substitutions: (a) replace the two `{{PROJECT_NAME}}` placeholders with the workspace folder's name (e.g., `Greensboro Claim`), and (b) replace the contents of the `<script id="progress-data">` block with the current progress state as JSON. Each stage object carries an `areas` array of `{ "name", "status" }` sub-points (empty `[]` until the macro-areas are seeded). The template ships with all 14 stages pre-embedded at status `Not started` with empty `areas`, so for a fresh audit before the map exists you can leave the JSON as-is; once the map is set, fill each applicable stage's `areas` array (Stage 1 and Final Delivery stay empty). Write the result to `outputs/audit-progress-artifact.html`, then call `mcp__cowork__create_artifact` with id `claim-audit-progress` and that file path. (The title is set once at creation; updates touch only the `<script id="progress-data">` block.)
 
@@ -448,6 +451,36 @@ This is distinct from the Audit-Myopia check (§2.4). §2.4 stops you from *dupl
 
 Each stage skill names its own lane in a **"Stay in this stage's lane"** section — read it at the start of the stage. When in doubt whether an observation belongs to this stage, it does not: drop it.
 
+### 2.11 Bilingual output mode (English / English + Spanish)
+
+Suggestions can be presented in **English only** (the default) or in **English + Spanish**. This is a project-wide setting that persists across chats, exactly like the audit-mode toggle.
+
+**Where the setting lives.** The `**Languages:**` line at the top of `outputs/audit-progress.md`, directly under `**Mode:**` (see §2.6). Two valid values:
+
+```
+**Languages:** English
+```
+
+```
+**Languages:** English + Spanish
+```
+
+If the file is missing, the line is missing, or the value is anything other than `English + Spanish`, treat it as **English only**. Read this line whenever you read the `**Mode:**` line — at audit start and at each stage.
+
+**Who writes it.** Only the `claim-bilingual-mode` skill. Stage skills and the orchestrator never change it — they read it and obey it. Once set to `English + Spanish`, it stays on for the rest of the project until `claim-bilingual-mode` turns it back off.
+
+**What `English + Spanish` requires.** Every place a suggestion's **natural-language content** is shown to a person, show the English first and the Spanish translation immediately after, in the *same* surface and format — do not invent a separate document, just add the Spanish alongside the English already there. Concretely:
+
+- **Per-suggestion prompts (§2.3).** The `AskUserQuestion` question text becomes: `"Suggestion #[N]: [English one-line summary] · ES: [Spanish one-line summary]"`. The four options (Accept / Reject / Modify / Ask a question) stay in English — they are fixed controls, not content.
+- **The suggestion-list markdown (`outputs/audit-suggestion-list.md`).** In the descriptive cells — **Proposed change**, **Supporting evidence**, and any **Claude notes** — write the English text, then an HTML line break, then the Spanish prefixed `ES:`, so the table structure is unchanged. Example: `Add 1 coat primer to drywall<br>ES: Agregar 1 capa de imprimante al panel de yeso`. Leave the **Label** code as-is unless it contains descriptive words (the `b`/`c`/`Supp-1a` codes are not translated).
+- **Everywhere downstream, automatically.** The live suggestion-list artifact renders those cells, the XLSX exports copy them verbatim, and the PDF annotator reads them — so once the markdown cells are bilingual, all of those surfaces are bilingual too with no extra work. Any prose list of suggestions you show in chat before the per-suggestion asks follows the same English-then-Spanish rule.
+
+**Never translated — keep verbatim in both languages.** The carrier line number and title (quoted from the carrier PDF), all figures (quantities, units, unit prices, M/E/L, percentages), code citations and standard numbers (IICRC S500, etc.), file paths, the `#`, the `Suggestion type` token (Add/Correct/Flag), the `Label` code, and the `Disposition` value. Translate only the explanatory prose around them, and preserve every number and citation exactly — a mistranslated quantity is a factual-integrity failure (§1).
+
+**Translation standard.** Clear, professional, neutral Spanish suitable for an insurance/construction audit (understandable across Latin American and US-Hispanic audiences). If a construction term has no clean Spanish equivalent, give the Spanish then the English in parentheses, e.g. `tablaroca (drywall)`.
+
+This applies to **all 13 stages and every skill** for the rest of the project, because every skill reads these protocols and the `**Languages:**` line each session. It is not a per-response choice — it is on until turned off.
+
 ---
 
 ## 3. Output Format Requirements
@@ -544,6 +577,7 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Cost-vs-justification sanity**: if the justification is "labor was missing," the cost adjustment should reflect labor — not a token bump.
 - **Stayed in lane (§2.10)**: this response audited only the active stage's concern. It does not mention, ask about, or record anything owned by another stage. If it does, cut that content and drop the out-of-stage observation entirely.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
+- **Bilingual rendering (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm every suggestion shown this response carries the Spanish alongside the English — in the prompt summary and in the descriptive cells written to the list — and that every number, code, and carrier line reference is identical in both languages. If `English`, no Spanish is added.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.
 
