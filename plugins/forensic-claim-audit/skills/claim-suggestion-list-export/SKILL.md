@@ -78,7 +78,7 @@ Use the `xlsx` skill:
    - `Label`
    - `Proposed change`
    - `Number provenance`
-   - `Supporting evidence`
+   - `Supporting evidence` (carries the plain-language Why + named source files, per §1.5 — the reviewer-facing reason and evidence; copy verbatim, do not summarize)
    - `User notes`
    - `Claude notes`
    - `Disposition` (will always be `Agreed` for every row in this export — kept for column-parity with the finalizer's full-record XLSX)

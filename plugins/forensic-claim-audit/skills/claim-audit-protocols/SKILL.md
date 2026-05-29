@@ -68,6 +68,25 @@ When bash fails:
 
 Pick whichever the user picks. Never silently substitute head-math when bash fails. The user has to know what broke so they can choose how to keep the math reliable.
 
+### 1.5 Plain-Language Logic & Source Disclosure
+
+**Every suggestion must be reviewable by someone who was not in the room when you made it.** That means each suggestion has to answer two questions in plain, basic language — the kind a homeowner or a busy adjuster could read once and follow:
+
+1. **Why** — what is wrong, missing, or mispriced, and why the change is justified. One or two short sentences. Don't reach for jargon; when a technical term is unavoidable (a code section, an IICRC standard, a trade term), say in plain words what it means and why it applies *here*.
+2. **Where it came from** — the exact source(s) that prove the point: the **actual file name** and the **specific location inside it** (carrier PDF page / item number, photo file name, sketch or Matterport area, drying-log date, code citation, prior agreed suggestion #). Name the real file, never a category or internal bucket name (§9). State what that source shows.
+
+This is **not optional**, and it is **not** satisfied by the math provenance in §1.4. §1.4 proves the *numbers* are real; §1.5 proves the *reasoning and the evidence* are real and legible. A suggestion can have perfect math and still fail §1.5 if a reviewer can't tell, in plain language, why it exists or which file backs it.
+
+**The plain-language test.** Before any suggestion is shown or recorded, re-read its Why and its source line and ask: *could a person who has never seen this claim read these two things and understand the suggestion — and find the evidence — without asking me a single question?* If not, rewrite until they can. Short, concrete, plain. No hedging, no padding, no internal bucket names.
+
+**Where it is enforced — all three surfaces carry the same plain-language Why + source:**
+
+- **The suggestion list** — the Why and the named source live in the `Supporting evidence` field (§2.3), so they flow automatically into the XLSX export and the annotated carrier PDF that reviewers read.
+- **The per-suggestion prompt** — stated in plain language both in the chat note immediately before each per-suggestion `AskUserQuestion` *and inside the `AskUserQuestion` question text itself* (§2.3), so the user can review the basis and decide from the question alone without scrolling back.
+- **The 4-section analysis** — spelled out in the Analysis section of every substantive response (§3).
+
+A suggestion missing either the plain-language Why or the named source file is **incomplete**. Do not record it, and do not ask the user to accept it, until both are present.
+
 ---
 
 ## 2. Process Protocols
@@ -117,7 +136,7 @@ The suggestion list is the persistent artifact that accumulates across all 13 au
 | Label | The Carrier Estimate Protocol label (`b`/`c`/`d` ancillary letter, `Supp-1a/b` for sub-letter conflicts, or `Supp-New`) |
 | Proposed change | Quantity, unit, unit price, M/E/L, grade, code citation — whatever fields the suggestion touches |
 | Number provenance | Per §1.4 — `bash` calculation with what/why/math, or copied with what/why/where |
-| Supporting evidence | File path or section reference for photos, sketches, prior audit output, code citations, etc. |
+| Supporting evidence | **The reviewer-facing logic + source, in plain language (§1.5) — two required parts:** (1) **Why** — one or two short, basic-language sentences saying what's wrong, missing, or mispriced and why the change is justified; (2) **Source** — the exact file name and the location inside it (carrier PDF page / item #, photo file name, sketch or Matterport area, drying-log date, code citation, prior agreed suggestion #) and what that source shows. Name the actual file, never a category. This field must stand on its own — it is exactly what the XLSX export and the annotated PDF put in front of a reviewer. A row whose `Supporting evidence` lacks a plain-language Why or a named source file is incomplete and must not be appended. |
 | User notes | Reserved for the user to annotate the entry during review (e.g., questions for the contractor, second-guesses, follow-up reminders). Claude does not write to this column — leave blank by default. |
 | Claude notes | Free-form annotations Claude writes about the entry. Required whenever disposition is `Needs-info` — the note must specify exactly what information is missing and what would unblock the entry (e.g., "needs a moisture-meter reading on the north wall before this can be quantified," or "needs the contractor's invoice for the roof-decking discovery"). Also used for any other Claude-side context worth recording on the entry (e.g., "rate verified at FL DOR 2026 schedule, URL in verified-facts section"). |
 | Disposition | `Agreed` (default for any accepted suggestion, whether or not the user modified it before accepting), `Halted` (§6 invoked on this entry), or `Needs-info` (waiting on contractor input before final delivery — the Claude notes column must say what info is needed) |
@@ -145,8 +164,20 @@ When a substantive audit response generates one or more suggestions:
 
 1. **Number the suggestions sequentially** across the entire audit. Continue from the highest `#` already in the suggestion list, or start at 1 if the list is empty. Numbers are global across all stages and never reused.
 
-2. **For each suggestion in order** — every one, with no skipping, summarizing, or batching — call `AskUserQuestion` with:
-   - **Question text:** `"Suggestion #[N]: [one-line summary of the suggestion]"`
+2. **For each suggestion in order** — every one, with no skipping, summarizing, or batching:
+
+   **First, state the basis in plain language (required, §1.5).** Immediately before the `AskUserQuestion` call, write a short plain-language note in the chat giving (a) **why** this suggestion exists — one or two basic-language sentences on what's wrong/missing and why the fix is justified — and (b) the **exact source file(s)** it rests on and what they show (carrier PDF item #, photo file name, sketch area, code citation, etc.). The user must be able to read this note plus the one-line summary and understand the suggestion without asking a question. This is the same plain-language Why + source you record in the entry's `Supporting evidence` field on Accept — write it once, here, and reuse it.
+
+   **Then** call `AskUserQuestion` with:
+   - **Question text — must itself carry the plain-language Why + named source (§1.5), not just the summary.** The user has to be able to make the Accept/Reject decision from the question alone, without scrolling back to the chat note. Format:
+
+     ```
+     Suggestion #[N]: [one-line summary of the suggestion].
+     Why: [one or two basic-language sentences — what's wrong/missing and why the fix is justified].
+     Source: [the named file(s) + the exact location inside them, and what they show].
+     ```
+
+     This is the same plain-language Why + source from the chat note above and the `Supporting evidence` field — write it once and reuse the same words in all three places. Keep it tight, but never drop the Why or the Source to shorten it.
    - **Options (4):**
      - `Accept`
      - `Reject`
@@ -156,7 +187,7 @@ When a substantive audit response generates one or more suggestions:
 
 3. **Process the user's response per option:**
 
-   - **Accept** — append the entry to `outputs/audit-suggestion-list.md` with disposition `Agreed`. Suggestion `#[N]` is now locked into the list.
+   - **Accept** — append the entry to `outputs/audit-suggestion-list.md` with disposition `Agreed`, writing the plain-language Why + named source (§1.5) into the `Supporting evidence` field — the same text you stated before the question. Do not append an entry whose `Supporting evidence` is missing the plain-language Why or the named source file. Suggestion `#[N]` is now locked into the list.
    - **Reject** — discard the suggestion. Do **not** add to the suggestion list. Note the rejection in chat ("Suggestion #N rejected — not added to the suggestion list."). The number `[N]` is consumed and not reused.
    - **Modify** — gather the modification (use the user's per-question Notes if they provided one with their answer; if not, follow up in chat with a single targeted question asking what to modify). Apply the modification, restate the modified suggestion in chat, then re-call `AskUserQuestion` for the same suggestion `#[N]` with the modified summary. If the user accepts, append to the suggestion list with disposition `Agreed` (no separate `Modified` state — once accepted, it's accepted). If they reject or modify again, repeat.
    - **Ask a question about this suggestion** — answer the user's question (use their Notes field if they typed it; if not, follow up in chat to gather the question). After the user is satisfied with the answer, re-call `AskUserQuestion` for the same suggestion `#[N]`. The eventual outcome is Accept (→ Agreed), Reject (→ discard), or Modify (→ as above).
@@ -243,6 +274,7 @@ Each stage carries the **macro-areas as sub-points** (per §2.8 — the same are
 # Audit Progress
 
 **Mode:** multi-session  <!-- single-session | multi-session — see §2.7 -->
+**Languages:** English  <!-- English | English + Spanish — see §2.11 -->
 
 ## 1. Scope Audit — Not started
 
@@ -269,7 +301,9 @@ No clock timestamps in this file. The `Status` is the timeline — adjacent entr
 
 The `**Mode:**` line is the toggle described in §2.7. Stages read it at the end-of-stage gate to decide whether to chain in this same chat (single-session) or hand off to a fresh chat in the same project (multi-session). Stage skills update only the table rows; the Mode line is written by `claim-audit-setup` (sets `multi-session`) and re-checked by `forensic-claim-audit` at invocation (which asks the user before changing it).
 
-If `outputs/audit-progress.md` already exists when a stage skill or the orchestrator starts, do **not** rewrite it — read it as-is, preserving the current Mode line and any in-progress rows.
+The `**Languages:**` line is the bilingual toggle described in §2.11. It controls whether suggestions are presented in English only or in English + Spanish, and — like Mode — it persists across chats for the whole project. Default is `English`; treat a missing or unrecognized value as English-only. Stage skills never change it; only `claim-bilingual-mode` writes it. Read it at the same time you read the Mode line.
+
+If `outputs/audit-progress.md` already exists when a stage skill or the orchestrator starts, do **not** rewrite it — read it as-is, preserving the current Mode and Languages lines and any in-progress rows.
 
 If the live artifact (id `claim-audit-progress`) doesn't exist, build the artifact HTML by reading the template at `forensic-claim-audit/assets/audit-progress-artifact.html` and making **two** substitutions: (a) replace the two `{{PROJECT_NAME}}` placeholders with the workspace folder's name (e.g., `Greensboro Claim`), and (b) replace the contents of the `<script id="progress-data">` block with the current progress state as JSON. Each stage object carries an `areas` array of `{ "name", "status" }` sub-points (empty `[]` until the macro-areas are seeded). The template ships with all 14 stages pre-embedded at status `Not started` with empty `areas`, so for a fresh audit before the map exists you can leave the JSON as-is; once the map is set, fill each applicable stage's `areas` array (Stage 1 and Final Delivery stay empty). Write the result to `outputs/audit-progress-artifact.html`, then call `mcp__cowork__create_artifact` with id `claim-audit-progress` and that file path. (The title is set once at creation; updates touch only the `<script id="progress-data">` block.)
 
@@ -448,6 +482,37 @@ This is distinct from the Audit-Myopia check (§2.4). §2.4 stops you from *dupl
 
 Each stage skill names its own lane in a **"Stay in this stage's lane"** section — read it at the start of the stage. When in doubt whether an observation belongs to this stage, it does not: drop it.
 
+### 2.11 Bilingual output mode (English / English + Spanish)
+
+Suggestions can be presented in **English only** (the default) or in **English + Spanish**. This is a project-wide setting that persists across chats, exactly like the audit-mode toggle.
+
+**Where the setting lives.** The `**Languages:**` line at the top of `outputs/audit-progress.md`, directly under `**Mode:**` (see §2.6). Two valid values:
+
+```
+**Languages:** English
+```
+
+```
+**Languages:** English + Spanish
+```
+
+If the file is missing, the line is missing, or the value is anything other than `English + Spanish`, treat it as **English only**. Read this line whenever you read the `**Mode:**` line — at audit start and at each stage.
+
+**Who writes it.** Only the `claim-bilingual-mode` skill. Stage skills and the orchestrator never change it — they read it and obey it. Once set to `English + Spanish`, it stays on for the rest of the project until `claim-bilingual-mode` turns it back off.
+
+**What `English + Spanish` requires.** Do **not** mix Spanish into the existing English files. Leave every English file and surface exactly as it is; the Spanish lives in **separate duplicate files**, and the only English surface that changes is the approval prompt. Concretely:
+
+- **English stays English, untouched.** The canonical suggestion list (`outputs/audit-suggestion-list.md`), the live on-screen suggestion-list artifact, your chat responses, and every other process surface remain English only. Never inject Spanish into them.
+- **Maintain a parallel Spanish suggestion list.** Keep a duplicate file `outputs/audit-suggestion-list-es.md` that mirrors the English list row-for-row: identical header, identical `#`, identical row order, and every number, code, carrier-line reference, `Suggestion type`, `Label`, and `Disposition` **byte-for-byte identical** — only the descriptive fields (Proposed change, Supporting evidence, Claude notes) are rendered in Spanish. Whenever you append, modify, or re-disposition a row in the English list, make the identical change to the matching row in the Spanish duplicate so the two never drift. Initialize it (header row only) the first time a row is written under bilingual mode; if it is missing when you need it, build it from the current English list.
+- **Spanish duplicates of the deliverables.** Any skill that produces a suggestion-list deliverable produces a parallel Spanish copy from the Spanish list when bilingual is on — **alongside, never replacing** the English one. The XLSX exports get an `-es` sibling (e.g., `audit-suggestion-list-agreed-es.xlsx`, `audit-suggestion-list-es.xlsx`); the PDF annotator produces a Spanish-annotated copy (e.g., the annotated PDF's name with an `-ES` suffix). The English deliverable is unchanged.
+- **Per-suggestion prompts show Spanish only (§2.3).** When bilingual is on, the `AskUserQuestion` question text — the summary line and its `Why:`/`Source:` lines — is shown in **Spanish only**, with no English in the popup. The four options (Accept / Reject / Modify / Ask a question) stay in English (fixed controls). The English wording of that same suggestion stays in your **chat response** as normal, so the English is always visible there — the popup is simply the Spanish.
+
+**Never translated — keep verbatim in both languages.** The carrier line number and title (quoted from the carrier PDF), all figures (quantities, units, unit prices, M/E/L, percentages), code citations and standard numbers (IICRC S500, etc.), file paths, the `#`, the `Suggestion type` token (Add/Correct/Flag), the `Label` code, and the `Disposition` value. Translate only the explanatory prose around them, and preserve every number and citation exactly — a mistranslated quantity is a factual-integrity failure (§1).
+
+**Translation standard.** Clear, professional, neutral Spanish suitable for an insurance/construction audit (understandable across Latin American and US-Hispanic audiences). If a construction term has no clean Spanish equivalent, give the Spanish then the English in parentheses, e.g. `tablaroca (drywall)`.
+
+This applies to **all 13 stages and every skill** for the rest of the project, because every skill reads these protocols and the `**Languages:**` line each session. It is not a per-response choice — it is on until turned off.
+
 ---
 
 ## 3. Output Format Requirements
@@ -455,7 +520,7 @@ Each stage skill names its own lane in a **"Stay in this stage's lane"** section
 When a response involves substantive analysis (any audit finding, recommendation, code citation, scope decision, line-item correction, completeness verdict, etc.), it must contain these four discrete sections:
 
 ### Analysis
-A breakdown of the topic based on verified and hypothesized facts.
+A breakdown of the topic based on verified and hypothesized facts. For **every** suggestion the response raises, the Analysis must state, in plain basic language (§1.5), **why** the suggestion exists and **which source file(s)** back it — each named explicitly (carrier PDF item #, photo file name, sketch or Matterport area, drying-log date, code citation, etc.) with what that source shows. Write it so a non-expert reviewer can follow the logic and find the evidence without asking a question.
 
 ### Recommendations
 Actionable steps or strategic options based on the analysis. A summary is permitted.
@@ -486,6 +551,7 @@ Before outputting any substantive response, run a final review of the draft. Che
 
 - **Factual integrity** — every fact has provenance per §1 (verified with citation, hypothesis with source-of-belief, paywalled with note). Any fact without provenance gets flagged or removed.
 - **Math integrity** — every number has provenance per §1.4 (calculated via `bash` with what/why/math, or copied with what/why/where). Any number that came from your head gets recomputed or removed.
+- **Plain-language logic & source** — every suggestion states, in plain basic language per §1.5, **why** it exists and **which named source file** backs it. Apply the plain-language test: a reviewer who never saw this claim could read the Why and the source and both understand the suggestion and locate the evidence. Any suggestion missing a plain-language Why or a named source file gets fixed before output.
 - **Logical integrity** — does each Recommendation actually follow from the Analysis above it? Does each conclusion match the protocol it relies on? Does the math support the conclusion you drew from it? Are the Challenges (to your Analysis and to the User's Thinking) genuine critiques rather than pro-forma boilerplate?
 - **Hyperbolic language** — scan per §2.5. If present, fix the underlying assumption that produced it, not just the wording.
 - **Audit-Myopia** — does this response duplicate any prior suggestion? Use `Read` on the suggestion list (see §2.3) to verify.
@@ -542,8 +608,10 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Subject match**: the subject of each supplement line item must match the subject of the carrier line item it corrects.
 - **Justification language**: justifications must be factual. No judgmental language. No "high-grade" specs in a low-grade home.
 - **Cost-vs-justification sanity**: if the justification is "labor was missing," the cost adjustment should reflect labor — not a token bump.
+- **Plain-language logic & source (§1.5)**: every suggestion this response produced carries a plain-language Why (what's wrong/missing and why the fix is justified, in basic language) and a named source file (the actual file + location, not a category) — stated in the chat note, **inside the per-suggestion `AskUserQuestion` question text itself**, and recorded in `Supporting evidence`, using the same words in all three. If a reviewer who never saw the claim couldn't understand or locate the basis of a suggestion from the question alone, rewrite it before moving on.
 - **Stayed in lane (§2.10)**: this response audited only the active stage's concern. It does not mention, ask about, or record anything owned by another stage. If it does, cut that content and drop the out-of-stage observation entirely.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
+- **Bilingual rendering (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm every suggestion shown this response carries the Spanish alongside the English — in the prompt summary and in the descriptive cells written to the list — and that every number, code, and carrier line reference is identical in both languages. If `English`, no Spanish is added.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.
 
@@ -689,9 +757,12 @@ Never list missing items by category name only (`drying-log`, `measurement-repor
 
 > The Scope Audit skill has completed its execution per §4 of the protocols. The audit-progress.md file has been updated with status `Complete`. Since the mode is `multi-session`, I will now route per §4's multi-session branch and instruct you to invoke `claim-line-item-audit` in a fresh Cowork chat to load the next stage's skill file.
 
-**Per-suggestion question — yes:**
+**Per-suggestion question — yes** (the plain-language Why + source live *inside* the question text, per §1.5, so the user can decide from the question alone):
 
-> Suggestion #14: Add `R&R Subfloor` under Item 47 (Kitchen flooring tear-out). Quantity 120 SF, $2.10/SF. Accept / Reject / Modify / Ask a question?
+> Suggestion #14: Add `R&R Subfloor` under Item 47 (Kitchen flooring tear-out). Quantity 120 SF, $2.10/SF.
+> Why: the carrier's kitchen tear-out removes the flooring but never replaces the subfloor underneath it, and that subfloor gets damaged when the flooring comes up — so it has to be put back before new flooring goes down.
+> Source: carrier PDF Item 47 (Kitchen flooring tear-out, no subfloor line anywhere in the Kitchen) and photo `kitchen-floor-03.jpg`, which shows the exposed, water-stained subfloor.
+> Accept / Reject / Modify / Ask a question?
 
 **Per-suggestion question — no:**
 
