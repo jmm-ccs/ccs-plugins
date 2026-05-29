@@ -35,7 +35,7 @@ Three goals, run in order. Update the suggestion list (`Edit` on `outputs/audit-
 `Read` the carrier PDF for every cross-check. For each entry in the suggestion list:
 
 - Does the **Carrier line** (item number + title) match the carrier PDF exactly?
-- Does the **Supporting evidence** still exist and still support the suggestion?
+- Does the **Supporting evidence** still exist and still support the suggestion — and does it pass the §1.5 plain-language test? A reviewer who never saw this claim must be able to read it and understand, in basic language, **why** the suggestion exists and **which named source file** backs it. If the Why or the source file is missing, vague, or named only by category, flag the entry for rewrite before delivery.
 - Does any number in the **Proposed change** or **Number provenance** column hold up against §1.4 (calculated via `bash` or copied with explicit source)? Re-run any sums in `bash` that look load-bearing.
 - Is the unit cost plausible against construction reality?
 - Is there any judgmental or hyperbolic language in the entry's **Proposed change** or notes?

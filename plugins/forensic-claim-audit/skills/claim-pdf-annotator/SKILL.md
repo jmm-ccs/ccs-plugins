@@ -37,7 +37,7 @@ If either is missing, use `AskUserQuestion` to gather the path and stop until pr
    - **Label** per Carrier Estimate Protocol (`b`/`c`/`d` ancillary letter, `Supp-1a/b` for sub-letter conflicts, or `Supp-New`)
    - **Proposed change** (the fields and values from the suggestion list)
    - **Number provenance** (per §1.4 — the calculated-or-copied breakdown)
-   - **Supporting evidence** (file path or section reference)
+   - **Supporting evidence** (the plain-language Why + named source files, per §1.5 — this is the reviewer-facing reason and evidence; copy it verbatim so the comment explains, in basic language, why the suggestion exists and which file backs it)
 
 5. **Save** the annotated PDF as `outputs/[carrier-pdf-name]-annotated.pdf`. Report to the user how many comments were placed and how many entries (if any) could not be located.
 
