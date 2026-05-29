@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{PROJECT_NAME}} audit findings</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 18px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0 0 2px;
+    }
+    .updated {
+      font-size: 12px;
+      color: #777;
+      font-style: italic;
+      margin: 0 0 16px;
+    }
+    details.stage {
+      border: 1px solid #e6e6e6;
+      border-radius: 8px;
+      margin: 0 0 10px;
+      overflow: hidden;
+    }
+    details.stage > summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 10px 14px;
+      background: #f6f7f9;
+      font-weight: 600;
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    details.stage > summary::-webkit-details-marker { display: none; }
+    details.stage > summary::before {
+      content: "▸";
+      color: #999;
+      font-size: 11px;
+    }
+    details.stage[open] > summary::before { content: "▾"; }
+    .stage-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 11px;
+      background: #1d63d8;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .stage-body { padding: 12px 14px 4px; }
+    .group { margin: 0 0 18px; }
+    .group h3 {
+      font-size: 12.5px;
+      font-weight: 600;
+      margin: 0 0 7px;
+      color: #1a1a1a;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 3px;
+    }
+    .group .note { color: #555; margin: 0 0 7px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    th {
+      text-align: left;
+      font-weight: 500;
+      color: #444;
+      background: #f5f5f5;
+      padding: 6px 9px;
+      border-bottom: 2px solid #ddd;
+      vertical-align: top;
+    }
+    td {
+      padding: 6px 9px;
+      vertical-align: top;
+      border-bottom: 1px solid #eee;
+    }
+    tr:hover td { background: #fafafa; }
+    .stage-empty { color: #999; font-style: italic; padding: 2px 0 10px; }
+    .all-empty {
+      padding: 30px 16px;
+      text-align: center;
+      color: #888;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px dashed #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>{{PROJECT_NAME}} audit findings</h1>
+  <p class="updated" id="updated-stamp"></p>
+
+  <div id="stages"></div>
+  <div id="all-empty" class="all-empty" style="display:none;">No findings recorded yet.</div>
+
+  <!--
+    One consolidated view of every stage's recorded findings (protocols §2.9).
+    Each stage's canonical record is its own markdown file in outputs/stage-outputs/NN-slug.md;
+    this artifact is the convenience view that rolls them all up. If they diverge, the markdown is correct.
+
+    Data shape:
+      { "updated": "<stage/step context, never a clock time>",
+        "stages": [
+          { "num": "1", "name": "Scope Audit",
+            "groups": [ { "title": "<macro-area / section>",
+                          "note": "<optional prose>",
+                          "columns": ["Col A","Col B", ...],
+                          "rows": [ ["a1","b1", ...], ... ] }, ... ] },
+          ...
+        ] }
+    A stage with an empty groups array renders a "not yet recorded" line.
+    Each stage adds/refreshes its own entry; Claude calls mcp__cowork__update_artifact after changes.
+    Claude does NOT modify the title — set once at artifact creation.
+  -->
+  <script type="application/json" id="findings-data">{
+    "updated": "audit not yet started",
+    "stages": []
+  }</script>
+
+  <script>
+    (function () {
+      var raw = document.getElementById('findings-data').textContent.trim();
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { data = { updated: "", stages: [] }; }
+
+      document.getElementById('updated-stamp').textContent = 'Updated: ' + (data.updated || '—');
+
+      var container = document.getElementById('stages');
+      var stages = Array.isArray(data.stages) ? data.stages : [];
+
+      if (!stages.length) {
+        document.getElementById('all-empty').style.display = 'block';
+        return;
+      }
+
+      stages.forEach(function (st) {
+        var details = document.createElement('details');
+        details.className = 'stage';
+        details.open = true;
+
+        var summary = document.createElement('summary');
+        summary.innerHTML =
+          '<span class="stage-num">' + (st.num || '') + '</span>' +
+          '<span>' + (st.name || '') + '</span>';
+        details.appendChild(summary);
+
+        var body = document.createElement('div');
+        body.className = 'stage-body';
+
+        var groups = Array.isArray(st.groups) ? st.groups : [];
+        if (!groups.length) {
+          var em = document.createElement('div');
+          em.className = 'stage-empty';
+          em.textContent = 'No findings recorded yet.';
+          body.appendChild(em);
+        } else {
+          groups.forEach(function (g) {
+            var div = document.createElement('div');
+            div.className = 'group';
+
+            var h3 = document.createElement('h3');
+            h3.textContent = g.title || '';
+            div.appendChild(h3);
+
+            if (g.note) {
+              var p = document.createElement('p');
+              p.className = 'note';
+              p.textContent = g.note;
+              div.appendChild(p);
+            }
+
+            if (Array.isArray(g.columns) && g.columns.length && Array.isArray(g.rows)) {
+              var table = document.createElement('table');
+              var thead = document.createElement('thead');
+              var htr = document.createElement('tr');
+              g.columns.forEach(function (c) {
+                var th = document.createElement('th');
+                th.textContent = c;
+                htr.appendChild(th);
+              });
+              thead.appendChild(htr);
+              table.appendChild(thead);
+
+              var tbody = document.createElement('tbody');
+              g.rows.forEach(function (row) {
+                var tr = document.createElement('tr');
+                (row || []).forEach(function (cell) {
+                  var td = document.createElement('td');
+                  td.textContent = cell == null ? '' : String(cell);
+                  tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+              });
+              table.appendChild(tbody);
+              div.appendChild(table);
+            }
+
+            body.appendChild(div);
+          });
+        }
+
+        details.appendChild(body);
+        container.appendChild(details);
+      });
+    })();
+  </script>
+</body>
+</html>

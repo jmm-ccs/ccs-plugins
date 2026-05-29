@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{PROJECT_NAME}} audit progress</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0 0 14px;
+      color: #1a1a1a;
+    }
+    ul.stages {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .stage {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      font-weight: 500;
+      font-size: 11px;
+      box-sizing: border-box;
+    }
+    .name {
+      flex: 1;
+      line-height: 1.35;
+    }
+
+    /* Not started — filled light gray, muted number, regular text */
+    .stage.s-Not-started .num   { background: #e8e8e8; color: #888; }
+    .stage.s-Not-started .name  { color: #1a1a1a; font-weight: 400; }
+
+    /* In progress — blue ring, blue number, bold dark text */
+    .stage.s-In-progress .num   { background: #fff; border: 2px solid #1d63d8; color: #1d63d8; }
+    .stage.s-In-progress .name  { color: #1a1a1a; font-weight: 500; }
+
+    /* Awaiting verification — amber ring (variant of in-progress) */
+    .stage.s-Awaiting-verification .num   { background: #fff; border: 2px solid #ba7517; color: #ba7517; }
+    .stage.s-Awaiting-verification .name  { color: #1a1a1a; font-weight: 500; }
+
+    /* Complete — filled blue with white check, strikethrough title */
+    .stage.s-Complete .num      { background: #1d63d8; color: #fff; }
+    .stage.s-Complete .name     { color: #888; text-decoration: line-through; font-weight: 400; }
+
+    /* Skipped — filled muted gray with ✕, strikethrough light */
+    .stage.s-Skipped .num       { background: #c0c0c0; color: #fff; }
+    .stage.s-Skipped .name      { color: #aaa; text-decoration: line-through; font-weight: 400; }
+
+    /* Macro-area sub-points nested under a stage */
+    ul.areas {
+      list-style: none;
+      margin: 4px 0 2px 36px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .area {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12.5px;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .area .label { line-height: 1.3; }
+
+    .area.s-Not-started .dot           { background: #d8d8d8; }
+    .area.s-Not-started .label         { color: #666; }
+    .area.s-In-progress .dot           { background: #fff; border: 2px solid #1d63d8; }
+    .area.s-In-progress .label         { color: #1a1a1a; font-weight: 500; }
+    .area.s-Awaiting-verification .dot { background: #fff; border: 2px solid #ba7517; }
+    .area.s-Awaiting-verification .label { color: #1a1a1a; font-weight: 500; }
+    .area.s-Complete .dot              { background: #1d63d8; }
+    .area.s-Complete .label            { color: #999; text-decoration: line-through; }
+    .area.s-Skipped .dot               { background: #c0c0c0; }
+    .area.s-Skipped .label             { color: #aaa; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <h1>{{PROJECT_NAME}} audit progress</h1>
+
+  <ul class="stages" id="stages-list"></ul>
+
+  <!--
+    Each entry: { num, name, status, areas: [ { name, status }, ... ] }
+    Status values: "Not started", "In progress", "Awaiting verification", "Complete", "Skipped"
+    `areas` is the list of macro-area sub-points for the stage (see protocols §2.6 / §2.8).
+    It is [] until the macro-areas are seeded, and stays [] for Stage 1 (Scope) and Final Delivery.
+    The stage status is the rollup of its area sub-points.
+    No clock timestamps. The Status is the timeline.
+    Claude updates this block via mcp__cowork__update_artifact at every stage/area transition.
+    Claude does NOT modify the title — it's set once at artifact creation.
+    Canonical source: outputs/audit-progress.md
+  -->
+  <script type="application/json" id="progress-data">[
+    { "num": "1",  "name": "Scope Audit",                         "status": "Not started", "areas": [] },
+    { "num": "2",  "name": "Line Item Audit",                     "status": "Not started", "areas": [] },
+    { "num": "3",  "name": "Line Item Completeness Audit",        "status": "Not started", "areas": [] },
+    { "num": "4",  "name": "Related Items Audit",                 "status": "Not started", "areas": [] },
+    { "num": "5",  "name": "Type-of-Loss Audit",                  "status": "Not started", "areas": [] },
+    { "num": "6",  "name": "Appurtenances Audit",                 "status": "Not started", "areas": [] },
+    { "num": "7",  "name": "Code, Ordinance & Law Audit",         "status": "Not started", "areas": [] },
+    { "num": "8",  "name": "Continuity / Room-Myopia Audit",      "status": "Not started", "areas": [] },
+    { "num": "9",  "name": "Storage, Debris & Disposal Audit",    "status": "Not started", "areas": [] },
+    { "num": "10", "name": "Cleanup & Occupant Protection Audit", "status": "Not started", "areas": [] },
+    { "num": "11", "name": "Trades Audit",                        "status": "Not started", "areas": [] },
+    { "num": "12", "name": "Permits & Contractor Cost Audit",     "status": "Not started", "areas": [] },
+    { "num": "13", "name": "Sales Tax Audit",                     "status": "Not started", "areas": [] },
+    { "num": "F",  "name": "Final Delivery",                      "status": "Not started", "areas": [] }
+  ]</script>
+
+  <script>
+    (function () {
+      var raw = document.getElementById('progress-data').textContent.trim();
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { data = []; }
+
+      var ul = document.getElementById('stages-list');
+      data.forEach(function (s) {
+        var li = document.createElement('li');
+        var statusClass = (s.status || 'Not started').replace(/ /g, '-');
+
+        var stageRow = document.createElement('div');
+        stageRow.className = 'stage s-' + statusClass;
+
+        var symbol;
+        if (s.status === 'Complete')      symbol = '✓';
+        else if (s.status === 'Skipped')  symbol = '✕';
+        else                              symbol = (s.num || '');
+
+        stageRow.innerHTML =
+          '<span class="num">' + symbol + '</span>' +
+          '<span class="name">' + (s.name || '') + '</span>';
+        li.appendChild(stageRow);
+
+        if (Array.isArray(s.areas) && s.areas.length) {
+          var areaUl = document.createElement('ul');
+          areaUl.className = 'areas';
+          s.areas.forEach(function (a) {
+            var areaLi = document.createElement('li');
+            areaLi.className = 'area s-' + (a.status || 'Not started').replace(/ /g, '-');
+            areaLi.innerHTML =
+              '<span class="dot"></span>' +
+              '<span class="label">' + (a.name || '') + '</span>';
+            areaUl.appendChild(areaLi);
+          });
+          li.appendChild(areaUl);
+        }
+
+        ul.appendChild(li);
+      });
+    })();
+  </script>
+</body>
+</html>

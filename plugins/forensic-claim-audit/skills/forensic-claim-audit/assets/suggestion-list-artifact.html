@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{PROJECT_NAME}} audit suggestion list</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/theme/mermaid.min.css" integrity="sha384-jZvDSsmGB9oGGT/4l9bHXGoAv1OxvG/cFmSo0dZaSqmBgvQTKDBFAMftlXTmMbNW" crossorigin="anonymous">
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 500;
+      margin: 0 0 4px;
+    }
+    .subhead {
+      font-size: 13px;
+      color: #666;
+      margin: 0 0 12px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      align-items: center;
+      margin: 0 0 16px;
+      font-size: 12px;
+      color: #666;
+    }
+    .meta-item strong {
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+    .legend {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 0 0 16px;
+      font-size: 11px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .b-Agreed     { background: #eaf3de; color: #173404; }
+    .b-Halted     { background: #fbeaf0; color: #4b1528; }
+    .b-Needs-info { background: #f1efe8; color: #2c2c2a; }
+    .empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: #888;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px dashed #ddd;
+    }
+    .gridjs-wrapper { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>{{PROJECT_NAME}} audit suggestion list</h1>
+  <p class="subhead">CCS Forensic Claim Audit · canonical source: <code>outputs/audit-suggestion-list.md</code></p>
+
+  <div class="meta">
+    <span class="meta-item">Last updated: <strong id="updated">—</strong></span>
+    <span class="meta-item">Total entries: <strong id="count">0</strong></span>
+    <span class="meta-item">Agreed: <strong id="count-agreed">0</strong></span>
+    <span class="meta-item">Flagged: <strong id="count-flagged">0</strong></span>
+  </div>
+
+  <div class="legend">
+    <span class="badge b-Agreed">Agreed</span>
+    <span class="badge b-Halted">Halted</span>
+    <span class="badge b-Needs-info">Needs-info</span>
+  </div>
+
+  <div id="grid"></div>
+
+  <!--
+    The suggestion list data is embedded below as JSON. Claude updates this
+    block via mcp__cowork__update_artifact every time the suggestion list
+    changes. The markdown file at outputs/audit-suggestion-list.md remains
+    canonical; this artifact is a convenience view.
+
+    Only suggestions the user has explicitly accepted appear here.
+    Each entry: { num, stage, carrierLine, type, label, change, provenance, evidence, userNotes, claudeNotes, disposition }
+  -->
+  <script type="application/json" id="suggestion-list-data">[]</script>
+
+  <!--
+    Stage-context stamp for the "Last updated" field. NOT a clock timestamp.
+    Claude rewrites this on every artifact refresh with a short, contextual
+    string describing where in the audit the refresh happened — e.g.,
+    "audit not yet started", "after Stage 5 (Type-of-Loss) gate",
+    "during Stage 3 (Kitchen)", "during Final Delivery Sanity Audit",
+    "after HALT correction on entry #12".
+  -->
+  <script type="application/json" id="last-updated-context">"audit not yet started"</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/gridjs@5.0.2/dist/gridjs.umd.js" integrity="sha384-/XXDzxe4FsGiAe50i/u9pY/Vy/uX654MHB1xoc1BJNnH1WXHhqHga9g3q5tF4gj7" crossorigin="anonymous"></script>
+  <script>
+    (function () {
+      var raw = document.getElementById('suggestion-list-data').textContent.trim();
+      var data;
+      try { data = JSON.parse(raw); } catch (e) { data = []; }
+
+      var contextRaw = document.getElementById('last-updated-context').textContent.trim();
+      var contextStr;
+      try { contextStr = JSON.parse(contextRaw); } catch (e) { contextStr = '—'; }
+      if (typeof contextStr !== 'string' || !contextStr) contextStr = '—';
+      document.getElementById('updated').textContent = contextStr;
+      document.getElementById('count').textContent = data.length;
+
+      var agreed = data.filter(function (d) { return d.disposition === 'Agreed'; }).length;
+      var flagged = data.filter(function (d) {
+        return d.disposition === 'Halted' || d.disposition === 'Needs-info';
+      }).length;
+      document.getElementById('count-agreed').textContent = agreed;
+      document.getElementById('count-flagged').textContent = flagged;
+
+      var grid = document.getElementById('grid');
+
+      if (data.length === 0) {
+        grid.innerHTML = '<div class="empty">No accepted suggestions yet. Entries will appear here as the audit progresses and you accept proposals.</div>';
+        return;
+      }
+
+      new gridjs.Grid({
+        columns: [
+          { name: '#',              width: '50px' },
+          { name: 'Stage',          width: '60px' },
+          { name: 'Carrier Line',   width: '180px' },
+          { name: 'Type',           width: '80px' },
+          { name: 'Label',          width: '100px' },
+          { name: 'Proposed Change' },
+          { name: 'Provenance',     width: '180px' },
+          { name: 'Evidence',       width: '160px' },
+          { name: 'User Notes',     width: '140px' },
+          { name: 'Claude Notes',   width: '180px' },
+          {
+            name: 'Disposition',
+            width: '110px',
+            formatter: function (cell) {
+              return gridjs.html('<span class="badge b-' + cell + '">' + cell + '</span>');
+            }
+          }
+        ],
+        data: data.map(function (d) {
+          return [
+            d.num || '',
+            d.stage || '',
+            d.carrierLine || '',
+            d.type || '',
+            d.label || '',
+            d.change || '',
+            d.provenance || '',
+            d.evidence || '',
+            d.userNotes || '',
+            d.claudeNotes || '',
+            d.disposition || 'Agreed'
+          ];
+        }),
+        sort: true,
+        search: true,
+        pagination: { limit: 50, summary: true },
+        resizable: true,
+        style: {
+          th: { 'background-color': '#f5f5f5', 'font-weight': '500' },
+          td: { 'vertical-align': 'top' }
+        }
+      }).render(grid);
+    })();
+  </script>
+</body>
+</html>
