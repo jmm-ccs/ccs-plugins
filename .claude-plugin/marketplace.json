@@ -1,0 +1,15 @@
+{
+  "name": "ccs-plugins",
+  "owner": {
+    "name": "Construction Claim Services",
+    "email": "jmm@constructionclaimservices.com"
+  },
+  "description": "Construction Claim Services internal Cowork plugins.",
+  "plugins": [
+    {
+      "name": "forensic-claim-audit",
+      "source": "./plugins/forensic-claim-audit",
+      "description": "Forensic insurance claim auditing toolkit: 13 staged supplement-audit skills with shared factual-integrity protocols, plus finalizer, PDF annotator, inventory and export utilities."
+    }
+  ]
+}
