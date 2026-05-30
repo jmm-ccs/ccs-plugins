@@ -11,6 +11,8 @@ Goal: room by room, re-examine each line item to confirm the related/companion i
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else in this stage. Do this every time this skill is invoked. The Audit-Myopia check is especially critical here — many related items overlap with Stage 3 corrections.
 
+**§1.5 reminder — every suggestion this stage raises needs its plain-language Why + Source.** In basic language: what's wrong or missing and why the fix is justified, plus the basis it rests on — a named project file, a verified citation, or an openly flagged judgment call. No Why or no Source means it isn't ready: don't propose it and don't record it (§1.5 completeness gate, §2.3).
+
 ## Prerequisite
 
 Stages 1, 2, and 3 must be confirmed complete.
