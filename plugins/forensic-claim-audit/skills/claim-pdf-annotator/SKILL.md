@@ -41,6 +41,8 @@ If either is missing, use `AskUserQuestion` to gather the path and stop until pr
 
 5. **Save** the annotated PDF as `outputs/[carrier-pdf-name]-annotated.pdf`. Report to the user how many comments were placed and how many entries (if any) could not be located.
 
+**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish-annotated copy `outputs/[carrier-pdf-name]-annotated-ES.pdf`: duplicate the carrier PDF again and place the same comments at the same carrier lines, but take the comment wording from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` (descriptive text and Supporting-evidence prose in Spanish; carrier line targets, numbers, and codes identical). Produce it **alongside** the English annotated PDF, never instead of it.
+
 ## What this skill does NOT do
 
 - Does not run the Sanity Audit (that's `claim-audit-finalizer`)

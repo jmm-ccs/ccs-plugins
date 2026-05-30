@@ -90,6 +90,8 @@ Use the `xlsx` skill:
 
 Confirm the XLSX was written successfully before moving to Phase 3.
 
+**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish duplicate `outputs/audit-suggestion-list-es.xlsx`, built from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` (same all-entries scope, same columns; numbers, codes, and carrier-line references identical, descriptive fields in Spanish). Write it **alongside** the English XLSX. The annotator (Phase 3) produces the Spanish-annotated PDF on its own when bilingual is on.
+
 ## Phase 3 — Invoke the PDF annotator
 
 Use the `Read` tool on `../claim-pdf-annotator/SKILL.md` and execute that skill end-to-end. The annotator reads the suggestion list, duplicates the carrier PDF, and places comments at each relevant carrier line. It will save the annotated PDF as `outputs/[carrier-pdf-name]-annotated.pdf`.
