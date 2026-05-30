@@ -87,6 +87,8 @@ Use the `xlsx` skill:
 
 Confirm the XLSX wrote successfully before proceeding.
 
+**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish duplicate `outputs/audit-suggestion-list-agreed-es.xlsx`, built from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` with the same Agreed-only filter and the same columns — numbers, codes, and carrier-line references identical, descriptive fields in Spanish. Write it **alongside** the English XLSX, never instead of it.
+
 ## Step 4 — Final factual-integrity pass
 
 Run the §3 final pass on this export:
