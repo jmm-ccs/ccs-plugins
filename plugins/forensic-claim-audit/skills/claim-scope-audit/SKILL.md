@@ -11,6 +11,8 @@ Goal: produce an authoritative list of rooms and categories that should appear i
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else in this stage. Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier in the conversation. The Factual Integrity rules, the Carrier Estimate Protocol, the Audit-Myopia check, the HALT response pattern, and the Tool Usage table must all be actively in attention for this stage.
 
+**§1.5 reminder — every suggestion this stage raises needs its plain-language Why + Source.** In basic language: what's wrong or missing and why the fix is justified, plus the basis it rests on — a named project file, a verified citation, or an openly flagged judgment call. No Why or no Source means it isn't ready: don't propose it and don't record it (§1.5 completeness gate, §2.3).
+
 ## Inputs you need
 
 - Carrier's estimate (Xactimate PDF or export). Use `Read` on it.
