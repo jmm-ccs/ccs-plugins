@@ -23,7 +23,7 @@ Work **one macro-area at a time** (§2.8 of the protocols). Appurtenances live i
 
 ### Step 1 — Inventory all appurtenances on the property
 
-Use `Read` on project documentation (photos, sketches, satellite imagery, Matterport exterior, walk-around video) to build a complete list of structures outside the dwelling.
+Use `Read` on project documentation (photos — by room/area per the photo map where it covers exteriors — sketches, satellite imagery, the carrier estimate's diagram pages, and walk-around video via its `video-intake/` frames) to build a complete list of structures outside the dwelling.
 
 Use `Read` on `references/appurtenance-categories.md` for the starting-point list of appurtenance categories to inventory. The reference is a **starting point, not exhaustive** — apply additional industry-standard considerations for the specific property.
 
