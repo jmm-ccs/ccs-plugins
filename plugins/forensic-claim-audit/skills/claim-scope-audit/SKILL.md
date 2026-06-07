@@ -17,6 +17,7 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 - Carrier's estimate (Xactimate PDF or export). Use `Read` on it.
 - Project documentation: photos, video walkthroughs, sketches, Matterport scans, contractor's scope of work, FNOL narrative, third-party measurement reports (EagleView, HOVER, etc.). Use `Read` on each file.
+  - **Walkthrough videos are read through their intake output, not the raw file.** If the project folder has a video with a matching `video-intake/<video name>/` folder, `Read` the extracted frames (`frames/`), the narration transcript (`transcript.md`), and the manifest there. If a video has **no** intake folder, run `claim-video-intake` (Read `../claim-video-intake/SKILL.md` and execute it) before starting this stage — the raw video file itself is not readable.
 - The Forensic Claim Analysis Checklists, especially Checklist 2 (Field Scoping) — note that Checklist 2 is a **starting-point guide, not an exhaustive list**; supplement with any reliable, independently-verifiable, industry-standard guidance.
 - The macro-area map (`outputs/macro-areas.md`, §2.8 of the protocols). Use `Read` on it. If it doesn't exist (setup was skipped), establish it first per §2.8 — propose a division from the docs + estimate and confirm with the user — before walking the scope.
 
@@ -28,7 +29,7 @@ Work **one macro-area at a time** (§2.8 of the protocols). Walk the macro-areas
 
 1. **Extract the carrier's room/category list.** Use `Read` on the carrier PDF. Preserve order and titles exactly as the PDF has them — room names must match the PDF. Group the rooms under the macro-area each belongs to.
 
-2. **Build an independent room/category list from the project documentation.** Use `Read` on photos, sketches, Matterport, and the contractor's scope. For each room you identify, note the source evidence (file name, Matterport floor, sketch reference).
+2. **Build an independent room/category list from the project documentation.** Use `Read` on photos, sketches, Matterport, walkthrough-video frames and transcript (`video-intake/<video name>/`), and the contractor's scope. For each room you identify, note the source evidence (file name, Matterport floor, sketch reference, video frame filename, or transcript timestamp). A walkthrough video is especially strong here: the frame sequence covers the property in walk order, so rooms the narrator passed through appear even if nobody photographed them — and a narration line naming the room (e.g., *"transcript.md [04:31] — 'this is the master toilet'"*) pairs with the frames at the same timestamp.
 
 3. **Cross-walk the two lists.** Output a side-by-side table:
    - Column 1: Carrier's list (in carrier order)

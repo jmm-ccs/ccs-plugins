@@ -45,6 +45,7 @@ For each file, assign exactly one category based on filename and extension. The 
 
 | Category | Heuristics |
 |---|---|
+| Video-derived frames and transcripts | Any file inside a `video-intake/` folder (extracted walkthrough frames, `transcript.md`, `intake-manifest.md`) — path match beats every other heuristic |
 | Carrier estimate | Filenames containing `xactimate`, `estimate`, `carrier`, `adjuster`, `xc4`/`.esx`/`xceif` extensions; PDFs with `estimate` in the name |
 | CCS forensic checklists | Filenames containing `checklist`, `forensic claim analysis`, `field scoping` |
 | CCS marketing sheet | Filenames containing `marketing`, `1-sheet`, `one-sheet`, `CCS sheet` |
@@ -107,6 +108,8 @@ Categories present: [count of distinct categories]
 
 Sort the "All files" table by **Category**, then by **Path**, then by **Filename**. Use the plain-English category labels from Step 2 — never hyphenated IDs.
 
+**Video-derived frames are summarized, not listed row-by-row.** A processed walkthrough video can produce hundreds of frames; listing each one would drown the table. In the "All files" table, roll each video's `frames/` folder into a single row (Filename: `frames/ (N files)`, Size: the folder total) while `transcript.md` and `intake-manifest.md` keep their own rows. The Summary table counts the actual file totals.
+
 ## Step 4 — Flag missing expected items
 
 The audit expects each of the following in the project folder. Each entry below is **a thing the audit was expecting** — when one is missing, the user-facing message should describe that thing concretely (what it is, what it usually looks like, why the audit needs it), not just label it. The user knows forensic claim auditing; they don't know which abstract bucket your classifier put a file in.
@@ -150,6 +153,8 @@ All expected items are present. Workspace is ready for the audit.
 ```
 
 Do **not** flag items the user explicitly said don't apply (e.g., a condo unit with no appurtenances). If the user has not given that signal, flag the gap — they can dismiss it.
+
+**Unprocessed walkthrough videos.** Separately from the missing-items table: if any file in the *Videos* category has no matching `video-intake/<video filename without extension>/intake-manifest.md`, add a short note after the Missing items section (and a line in the Step 6 closing message) saying the walkthrough video hasn't been turned into readable evidence yet — the audit reads extracted stills and the narration transcript, not the raw video — and that sending `/claim-video-intake` will do it. This is a not-yet-processed input, not a missing one, so it never goes in the missing-items table.
 
 ## Step 5 — Write `outputs/project-inventory.xlsx`
 
