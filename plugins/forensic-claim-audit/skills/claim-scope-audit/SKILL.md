@@ -1,6 +1,6 @@
 ---
 name: claim-scope-audit
-description: Stage 1 of the CCS forensic claim audit. Audit the overall scope of a property insurance estimate — the rooms and categories included — to flag any rooms or categories the carrier missed. Trigger when the user says "is the scope complete," "did the carrier miss any rooms," "compare the carrier's room list against my photos / sketch / Matterport," or starts a fresh audit. Does not touch line items inside rooms (that's Stage 2).
+description: Stage 1 of the CCS forensic claim audit. Audit the overall scope of a property insurance estimate — the rooms and categories included — to flag any rooms or categories the carrier missed. Starts from the carrier estimate's own room list and diagram pages, compares against every other file in the project folder, and applies the CCS room-inclusion rule. Trigger when the user says "is the scope complete," "did the carrier miss any rooms," "compare the carrier's room list against the project files," or starts a fresh audit. Does not touch line items inside rooms (that's Stage 2).
 ---
 
 # Scope Audit (Stage 1 of 13)
@@ -15,8 +15,8 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 ## Inputs you need
 
-- Carrier's estimate (Xactimate PDF or export). Use `Read` on it.
-- Project documentation: photos, video walkthroughs, sketches, Matterport scans, contractor's scope of work, FNOL narrative, third-party measurement reports (EagleView, HOVER, etc.). Use `Read` on each file.
+- Carrier's estimate (Xactimate PDF or export), **including its sketch/diagram pages**. Use `Read` on it. The estimate is always present, and its diagram pages are the geometric baseline for the whole audit: every room the carrier drew, with dimensions and which rooms adjoin which. The scope walk is based on these diagrams.
+- **Every other file in the project folder.** The comparison set is all of them — photos, video walkthroughs, sketches and floor plans, contractor's scope of work, FNOL narrative, third-party measurement reports (EagleView, HOVER, etc.), drying logs, correspondence, invoices. Don't pre-filter to "visual" documents: a denial letter, an invoice, or the contractor's scope can name a room no photo shows. Use `Read` on each file.
   - **Walkthrough videos are read through their intake output, not the raw file.** If the project folder has a video with a matching `video-intake/<video name>/` folder, `Read` the extracted frames (`frames/`), the narration transcript (`transcript.md`), and the manifest there. If a video has **no** intake folder, run `claim-video-intake` (Read `../claim-video-intake/SKILL.md` and execute it) before starting this stage — the raw video file itself is not readable.
 - The Forensic Claim Analysis Checklists, especially Checklist 2 (Field Scoping) — note that Checklist 2 is a **starting-point guide, not an exhaustive list**; supplement with any reliable, independently-verifiable, industry-standard guidance.
 - The macro-area map (`outputs/macro-areas.md`, §2.8 of the protocols). Use `Read` on it. If it doesn't exist (setup was skipped), establish it first per §2.8 — propose a division from the docs + estimate and confirm with the user — before walking the scope.
@@ -27,18 +27,33 @@ If any of the inputs above other than the macro-area map are missing, list what'
 
 Work **one macro-area at a time** (§2.8 of the protocols). Walk the macro-areas in the order the map lists them; produce the cross-walk for one macro-area, ask the per-macro-area gate, then move to the next. Don't dump the whole-property cross-walk in one pass.
 
-1. **Extract the carrier's room/category list.** Use `Read` on the carrier PDF. Preserve order and titles exactly as the PDF has them — room names must match the PDF. Group the rooms under the macro-area each belongs to.
+1. **Start with the carrier's estimate — its room list and its diagrams.** Use `Read` on the carrier PDF. Extract the room/category list, preserving order and titles exactly as the PDF has them — room names must match the PDF. Group the rooms under the macro-area each belongs to. Then read the estimate's sketch/diagram pages and note, for each room: its drawn dimensions and which rooms adjoin it. If the diagrams draw a space that never appears as a room in the line items (a closet, hallway, stairwell, or chase drawn but not scoped), that is a finding backed by the carrier's own document — carry it into the cross-walk.
 
-2. **Build an independent room/category list from the project documentation.** Use `Read` on photos, sketches, Matterport, walkthrough-video frames and transcript (`video-intake/<video name>/`), and the contractor's scope. For each room you identify, note the source evidence (file name, Matterport floor, sketch reference, video frame filename, or transcript timestamp). A walkthrough video is especially strong here: the frame sequence covers the property in walk order, so rooms the narrator passed through appear even if nobody photographed them — and a narration line naming the room (e.g., *"transcript.md [04:31] — 'this is the master toilet'"*) pairs with the frames at the same timestamp.
+2. **Compare against every other file in the folder.** Build an independent room/category list from **all** project files, not a visual subset. Use `Read` on photos, sketches, walkthrough-video frames and transcript (`video-intake/<video name>/`), the contractor's scope, measurement reports, drying logs, correspondence, and invoices. For each room you identify, note the source evidence (file name, sketch reference, video frame filename, transcript timestamp, or document + page). A walkthrough video is especially strong here: the frame sequence covers the property in walk order, so rooms the narrator passed through appear even if nobody photographed them — and a narration line naming the room (e.g., *"transcript.md [04:31] — 'this is the master toilet'"*) pairs with the frames at the same timestamp.
 
-3. **Cross-walk the two lists.** Output a side-by-side table:
+3. **Apply the room-inclusion rule** (next section) to every room on either list and to every adjoining room the diagrams show. The carrier's list tells you what they scoped; the rule tells you what *belongs*.
+
+4. **Cross-walk the two lists.** Output a side-by-side table:
    - Column 1: Carrier's list (in carrier order)
    - Column 2: Independent list
    - Column 3: Match status (Match / Missing from carrier / Missing from project docs / Naming discrepancy)
 
-4. **For each "Missing from carrier" finding,** cite the specific evidence (e.g., *"Master Toilet — visible in PHOTO-2026-02-28-12-37-10-15.jpg, also Floor2 Matterport bottom-left quadrant; not listed on carrier estimate"*).
+5. **For each "Missing from carrier" finding,** cite the specific evidence (e.g., *"Master Toilet — drawn on the carrier estimate's page-3 diagram adjoining the Master Bath, visible in PHOTO-2026-02-28-12-37-10-15.jpg; not listed as a room in the estimate"*), and name which clause of the room-inclusion rule pulls it in.
 
-5. **For naming discrepancies,** propose the carrier's naming convention — do not rename the carrier's rooms. The carrier's titles are preserved per the Carrier Estimate Protocol.
+6. **For naming discrepancies,** propose the carrier's naming convention — do not rename the carrier's rooms. The carrier's titles are preserved per the Carrier Estimate Protocol.
+
+## When a room belongs on the estimate — the CCS room-inclusion rule
+
+A room belongs on the estimate if **any** of these holds:
+
+1. **It has damage.**
+2. **It is adjacent to a room that has damage.** Use the carrier's diagram pages — adjacency is drawn right on them. The adjacent room goes on the list so its shared surfaces, openings, and continuous finishes get examined; what (if anything) is owed inside it is a later stage's question.
+3. **It might have damage.** The evidence is suggestive but unconfirmed — a stain at the edge of a photo, a drying log naming a room no photo covers, a likely moisture-migration path. Flag the room for inspection rather than dropping it.
+4. **It has no damage, but the construction affects it in any way** — crews and materials move through it, it needs protection during the work, demolition dust reaches it, or it loses use while work is underway. These construction-affected rooms are the ones carriers most consistently leave off.
+
+**The chimney is a room.** A chimney (GSO) is treated as its own room on every floor it passes through — not as a feature of whichever room it's photographed from. The same logic applies to other vertical elements spanning floors (chases, stairwells) where the loss involves them.
+
+Applying this rule is Stage 1's job; pricing what goes *inside* an included room belongs to Stages 2+.
 
 ## Checklist 2 cues — starting points, not exhaustive
 
@@ -99,13 +114,26 @@ Then bring the progress sub-points into line with the confirmed map (§2.6): mak
 
 This is a file update, not a suggestion — it doesn't go through the per-suggestion flow. The scope additions themselves still go through the suggestion-list flow above.
 
+## Map the photos to the confirmed rooms
+
+After the stage-end gate is confirmed (alongside the macro-area map update, before the §4 routing), tie the project photos to the rooms they show, so every later stage can cite a photo by room.
+
+1. Use `Read` on each photo. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the confirmed room list and the diagram adjacencies.
+2. Propose the full mapping in one pass: a table of photo filename → room → one-line note of what the photo shows. Photos you cannot place go under an **Unplaced** heading — never guess a room (§1).
+3. Ask the user to confirm or correct the mapping. One confirmation for the whole table, not per photo — this is working state, not a suggestion, so it does not go through the per-suggestion flow.
+4. Write the confirmed table to `outputs/photo-map.md` with `**Last updated:** after Stage 1 (Scope) confirmation` (stage context, never a clock time).
+
+Walkthrough-video frames don't need rows in this map — they're already timestamped and ordered in `video-intake/<video name>/`; reference that folder once in the map's header instead. If new photos land in the project folder mid-audit, any stage may propose additions to the map the same way: propose, user confirms, append.
+
+Later stages cite mapped photos as *"PHOTO-2026-02-28-12-37-10-15.jpg (Master Bath, per the photo map)"*.
+
 ## Verification gate
 
 When you believe this stage is complete, ask:
 
 > "Do you believe the Scope Audit is complete? If not, please direct me to the incomplete item(s)."
 
-After the user confirms, update the macro-area map (above), then route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next stage is **Line Item Audit** (skill: `claim-line-item-audit`).
+After the user confirms, update the macro-area map (above) and build the photo map (above), then route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next stage is **Line Item Audit** (skill: `claim-line-item-audit`).
 
 In single-session mode, §4 prompts *"Ready for Line Item Audit."* and waits for "begin line item audit" (or equivalent) before chaining. In multi-session mode, §4 prints the multi-session hand-off and stops here — the user begins the Line Item Audit in a fresh chat in this same Cowork project.
 

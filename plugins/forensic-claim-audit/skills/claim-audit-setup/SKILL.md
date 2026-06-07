@@ -77,7 +77,7 @@ If the inventory skill fails or the workspace is empty, do **not** abort the set
 
 Establish the macro-area map (§2.8 of the protocols) so every stage has its unit of work before Stage 1 begins.
 
-1. Use `Read` on whatever project docs the Step 4 inventory found — sketch, Matterport, photos, and the carrier estimate if present. Propose a division of the property into macro-areas (large physical sections grouping rooms/categories — e.g., Main Floor Interior, Upper Floor Interior, Basement, Exterior & Roof, Detached Structures). Adapt to the property; don't force a fixed set.
+1. Use `Read` on whatever project docs the Step 4 inventory found — the carrier estimate (including its sketch/diagram pages, the best source for the room layout) if present, plus sketches, photos, and walkthrough-video frames (`video-intake/`). Propose a division of the property into macro-areas (large physical sections grouping rooms/categories — e.g., Main Floor Interior, Upper Floor Interior, Basement, Exterior & Roof, Detached Structures). Adapt to the property; don't force a fixed set.
 
 2. Show the proposed division and ask the user to confirm or adjust it. This is the user's call — they have the final say on how the property is divided.
 

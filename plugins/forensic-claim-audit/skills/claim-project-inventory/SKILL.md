@@ -1,6 +1,6 @@
 ---
 name: claim-project-inventory
-description: On-demand utility for the CCS forensic claim audit. Walks the project workspace, categorizes every file by audit-relevance (carrier estimate, photos, sketches/Matterport, contractor scope of work, measurement reports, drying logs, invoices, permits/code documents, correspondence, contracts, other), flags expected-but-missing categories, and writes both a markdown inventory and an XLSX inventory to the outputs folder. Trigger when the user says "what files do I have," "inventory the project," "list project documents," "what's in the workspace," "what am I missing," "do I have everything to start the audit," or wants a pre-audit sanity check on inputs. Independent of any audit stage.
+description: On-demand utility for the CCS forensic claim audit. Walks the project workspace, categorizes every file by audit-relevance (carrier estimate, photos, sketches/floor plans, contractor scope of work, measurement reports, drying logs, invoices, permits/code documents, correspondence, contracts, other), flags expected-but-missing categories, and writes both a markdown inventory and an XLSX inventory to the outputs folder. Trigger when the user says "what files do I have," "inventory the project," "list project documents," "what's in the workspace," "what am I missing," "do I have everything to start the audit," or wants a pre-audit sanity check on inputs. Independent of any audit stage.
 ---
 
 # Claim Project Inventory
@@ -51,7 +51,7 @@ For each file, assign exactly one category based on filename and extension. The 
 | CCS marketing sheet | Filenames containing `marketing`, `1-sheet`, `one-sheet`, `CCS sheet` |
 | Photos | Image extensions (`.jpg`, `.jpeg`, `.png`, `.heic`, `.tif`, `.tiff`, `.webp`); also iPhone photo patterns (`IMG_*`, `PHOTO-*`, etc.) |
 | Videos | Video extensions (`.mov`, `.mp4`, `.m4v`, `.avi`, `.mkv`); walk-through videos |
-| Sketches and floor plans | Filenames containing `sketch`, `floor plan`, `floorplan`, `matterport`, `dollhouse`, `cubicasa`; CAD extensions (`.dwg`, `.dxf`) |
+| Sketches and floor plans | Filenames containing `sketch`, `floor plan`, `floorplan`, `cubicasa`; CAD extensions (`.dwg`, `.dxf`) |
 | Measurement reports | Filenames containing `eagleview`, `hover`, `roof report`, `measurement`, `aerial`, `drone`, `EV-`, `HV-` |
 | Contractor scope of work | Filenames containing `scope`, `SOW`, `contractor scope`, `proposal`, `bid` |
 | Drying logs | Filenames containing `drying`, `moisture`, `psychrometric`, `MICA`, `iicrc log`, `daily log` |
@@ -117,7 +117,7 @@ The audit expects each of the following in the project folder. Each entry below 
 | Expected item | Severity | What it is — say it like this when flagging it missing |
 |---|---|---|
 | Carrier estimate | Required | The insurance carrier's Xactimate estimate (or PDF/ESX/XCEIF export of it). This is the document the audit reviews against. The audit cannot start without it. |
-| Project documentation (photos, videos, sketches, or floor plans) | Required (at least one) | Visual record of the loss — phone photos from the site walk, the contractor's walk-through video, a Matterport scan, a hand sketch, a Cubicasa floor plan, or similar. The audit reads these to confirm scope room-by-room. At least one of these is required. |
+| Project documentation (photos, videos, sketches, or floor plans) | Required (at least one) | Visual record of the loss — phone photos from the site walk, the contractor's walk-through video, a hand sketch, a Cubicasa floor plan, or similar. The audit reads these to confirm scope room-by-room (the carrier estimate's own diagram pages carry the room geometry, but an independent visual record of the damage is still needed). At least one of these is required. |
 | Third-party measurement report | Required for roofing / exterior-appurtenance claims | An aerial roof-measurement report from EagleView, HOVER, drone imagery, or equivalent. The audit uses it to cross-check the carrier's roof dimensions, pitch, and exterior-appurtenance quantities against an independent measurement. Required when the loss involves roofing or exterior structures. |
 | Contractor scope of work | Strongly recommended | The contractor's own SOW, proposal, or bid for the repair. The audit cross-walks it against the carrier's estimate to surface scope gaps. |
 | Drying log | Required for water-loss claims | An IICRC S500 drying log — daily atmospheric readings (temperature, relative humidity, GPP), moisture-meter readings, equipment-on-site dates. Required for water losses so Stage 5 (Type-of-Loss Audit, water branch) can verify mitigation scope. Skip this row entirely if this is not a water-loss claim. |
