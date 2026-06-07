@@ -31,7 +31,7 @@ Work **one macro-area at a time** (§2.8 of the protocols). Walk the macro-areas
 
 2. **Compare against every other file in the folder.** Build an independent room/category list from **all** project files, not a visual subset. Use `Read` on photos, sketches, walkthrough-video frames and transcript (`video-intake/<video name>/`), the contractor's scope, measurement reports, drying logs, correspondence, and invoices. For each room you identify, note the source evidence (file name, sketch reference, video frame filename, transcript timestamp, or document + page). A walkthrough video is especially strong here: the frame sequence covers the property in walk order, so rooms the narrator passed through appear even if nobody photographed them — and a narration line naming the room (e.g., *"transcript.md [04:31] — 'this is the master toilet'"*) pairs with the frames at the same timestamp.
 
-3. **Apply the room-inclusion rule** (next section) to every room on either list and to every adjoining room the diagrams show. The carrier's list tells you what they scoped; the rule tells you what *belongs*.
+3. **Apply the room-inclusion rule** (next section) to every room on either list and to every adjoining room the diagrams show. Build the Tier-1 baseline first (every damaged room + every room adjoining one, mechanically off the diagrams), then run the Tier-2 judgment pass. The carrier's list tells you what they scoped; the rule tells you what *belongs*.
 
 4. **Cross-walk the two lists.** Output a side-by-side table:
    - Column 1: Carrier's list (in carrier order)
@@ -44,10 +44,17 @@ Work **one macro-area at a time** (§2.8 of the protocols). Walk the macro-areas
 
 ## When a room belongs on the estimate — the CCS room-inclusion rule
 
-A room belongs on the estimate if **any** of these holds:
+The rule has two tiers: a mechanical baseline, then a judgment pass that looks beyond it.
 
-1. **It has damage.**
-2. **It is adjacent to a room that has damage.** Use the carrier's diagram pages — adjacency is drawn right on them. The adjacent room goes on the list so its shared surfaces, openings, and continuous finishes get examined; what (if anything) is owed inside it is a later stage's question.
+**Tier 1 — the baseline (industry standard, applied mechanically).** *Any room with damage, and the room next to it.* Build this minimum set first, straight off the carrier's diagram pages:
+
+1. **It has damage** — it's on the list.
+2. **It is adjacent to a room that has damage** — it's on the list. Adjacency is drawn right on the diagram pages; mark every damaged room, then add every room the diagrams show adjoining one. No judgment involved at this tier. The adjacent room goes on so its shared surfaces, openings, and continuous finishes get examined; what (if anything) is owed inside it is a later stage's question.
+
+This baseline is the industry's own standard, so a carrier estimate that doesn't meet it is missing rooms by the carrier's own rules — the strongest kind of scope finding. Check the baseline completely before moving to Tier 2.
+
+**Tier 2 — look for damage and impact beyond the baseline.** Two more cases, requiring judgment:
+
 3. **It might have damage.** The evidence is suggestive but unconfirmed — a stain at the edge of a photo, a drying log naming a room no photo covers, a likely moisture-migration path. Flag the room for inspection rather than dropping it.
 4. **It has no damage, but the construction affects it in any way** — crews and materials move through it, it needs protection during the work, demolition dust reaches it, or it loses use while work is underway. These construction-affected rooms are the ones carriers most consistently leave off.
 
