@@ -114,26 +114,30 @@ Then bring the progress sub-points into line with the confirmed map (§2.6): mak
 
 This is a file update, not a suggestion — it doesn't go through the per-suggestion flow. The scope additions themselves still go through the suggestion-list flow above.
 
-## Map the photos to the confirmed rooms
+## Photo map & coverage check
 
-After the stage-end gate is confirmed (alongside the macro-area map update, before the §4 routing), tie the project photos to the rooms they show, so every later stage can cite a photo by room.
+This step runs on **every claim** — with or without a walkthrough video — after the last macro-area's cross-walk is confirmed and **before the stage-end verification gate**. It does two jobs at once: ties every photo to a room so later stages can cite photos by room, and verifies the photos don't show more property than the room list covers. It sits before the gate precisely because the second job can produce scope findings.
 
-1. Use `Read` on each photo. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the confirmed room list and the diagram adjacencies.
-2. Propose the full mapping in one pass: a table of photo filename → room → one-line note of what the photo shows. Photos you cannot place go under an **Unplaced** heading — never guess a room (§1).
-3. Ask the user to confirm or correct the mapping. One confirmation for the whole table, not per photo — this is working state, not a suggestion, so it does not go through the per-suggestion flow.
-4. Write the confirmed table to `outputs/photo-map.md` with `**Last updated:** after Stage 1 (Scope) confirmation` (stage context, never a clock time).
+1. Use `Read` on each photo. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the cross-walked room list and the diagram adjacencies.
+2. Build the full mapping in one pass: a table of photo filename → room → one-line note of what the photo shows.
+3. Every photo must land in exactly one of three places:
+   - **A room on the list** — the normal case.
+   - **Unidentifiable** — too tight, dark, or ambiguous to place. Goes under an **Unidentifiable** heading; never guess a room (§1).
+   - **Shows a space that is not on the room list** — a room, area, or structure visible in the photo that nothing on the cross-walked list accounts for. This is a **scope finding, not a mapping note**: run it through the room-inclusion rule and the per-suggestion flow (§2.3) like any other missing-room finding, citing the photo. If accepted, add the room to the list and map the photo to it.
+4. Show the proposed mapping and ask the user to confirm or correct it. One confirmation for the whole table — the scope findings from step 3 have already gone through their own per-suggestion calls; the mapping itself is working state, not a suggestion.
+5. After the stage-end gate is confirmed, write the confirmed table to `outputs/photo-map.md` with `**Last updated:** after Stage 1 (Scope) confirmation` (stage context, never a clock time).
 
-Walkthrough-video frames don't need rows in this map — they're already timestamped and ordered in `video-intake/<video name>/`; reference that folder once in the map's header instead. If new photos land in the project folder mid-audit, any stage may propose additions to the map the same way: propose, user confirms, append.
+Walkthrough-video frames don't need rows in this map — they're already timestamped and ordered in `video-intake/<video name>/`, and Method step 2 already walked them for unlisted rooms; reference that folder once in the map's header instead. If new photos land in the project folder mid-audit, any stage may propose additions to the map the same way: propose, user confirms, append.
 
 Later stages cite mapped photos as *"PHOTO-2026-02-28-12-37-10-15.jpg (Master Bath, per the photo map)"*.
 
 ## Verification gate
 
-When you believe this stage is complete, ask:
+The photo map & coverage check (above) must be done — every photo mapped, unidentifiable, or resolved as a scope finding — before this gate is asked. When you believe this stage is complete, ask:
 
 > "Do you believe the Scope Audit is complete? If not, please direct me to the incomplete item(s)."
 
-After the user confirms, update the macro-area map (above) and build the photo map (above), then route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next stage is **Line Item Audit** (skill: `claim-line-item-audit`).
+After the user confirms, update the macro-area map (above) and write the confirmed photo map to `outputs/photo-map.md` (above), then route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next stage is **Line Item Audit** (skill: `claim-line-item-audit`).
 
 In single-session mode, §4 prompts *"Ready for Line Item Audit."* and waits for "begin line item audit" (or equivalent) before chaining. In multi-session mode, §4 prints the multi-session hand-off and stops here — the user begins the Line Item Audit in a fresh chat in this same Cowork project.
 
