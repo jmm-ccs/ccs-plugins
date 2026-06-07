@@ -27,7 +27,9 @@ Use `Read` on `references/cross-room-impacts.md` for the starting-point list of 
 
 This stage is the **boundary-spanning exception** to the macro-area rule (§2.8). Every other stage works one macro-area at a time; this one exists precisely to catch impacts that *cross* boundaries, so its working unit is the adjacency/relationship **between** areas, not a single area in isolation. Read `outputs/macro-areas.md` and use it as your frame — pay special attention to where two macro-areas meet (e.g., interior-to-exterior transitions, floor-to-floor stairwells, a continuous floor running from one macro-area into the next), since those boundaries are exactly where the carrier's room-by-room scoping breaks down.
 
-Use `Read` on the carrier PDF, the project sketches, and Matterport scans. Walk every room and every transit path on the project, including the transitions between macro-areas. For each adjacency, ask:
+Use `Read` on the carrier PDF, the project sketches, Matterport scans, and walkthrough-video frames (`video-intake/<video name>/frames/`). A walkthrough video is the strongest adjacency evidence in the project folder: consecutive frames show the camera physically traveling from one room into the next, which is exactly the line-of-sight and transit-path relationship this stage audits. Cite a frame *range* for adjacency (e.g., *"frames frame-00210 through frame-00216 — the camera moves from the hallway into the living room over the same continuous oak floor, no threshold"*), and pair it with the narration transcript (`video-intake/<video name>/transcript.md`) where the narrator calls out a transition. If a raw video exists with no `video-intake/<video name>/` folder, run `claim-video-intake` before starting this stage.
+
+Walk every room and every transit path on the project, including the transitions between macro-areas. For each adjacency, ask:
 
 1. Does damage in Room A force work in Room B? (Material continuity, finish match, sightline.)
 2. Does the construction in Room A traverse Room B? (Transit protection.)
