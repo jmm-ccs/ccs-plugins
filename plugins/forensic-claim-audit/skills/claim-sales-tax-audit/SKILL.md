@@ -109,7 +109,7 @@ For every sales-tax suggestion this stage produces (per-line-item tax additions,
 
 > "Do you believe the Sales Tax Audit is complete? If not, please direct me to the incomplete item(s)."
 
-After the user confirms, route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next step is **Final Delivery** (skill: `claim-audit-finalizer`) — Stage 13 is the last audit stage, and Final Delivery runs the Sanity Audit, exports the suggestion list to XLSX, and produces the annotated carrier PDF.
+After the user confirms, route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next step is **Final Delivery** (skill: `claim-audit-finalizer`) — Stage 13 is the last audit stage, and Final Delivery runs the Sanity Audit, exports the suggestion list to XLSX, produces the annotated carrier PDF, and generates the supplement package document.
 
 In single-session mode, §4 prompts *"Ready for Output Process."* and waits for "begin output process" (or equivalent) before chaining into `claim-audit-finalizer`. In multi-session mode, §4 prints the multi-session hand-off (substituting "Final Delivery" / `claim-audit-finalizer` for the next-stage values) and stops here — the user begins Final Delivery in a fresh chat in this same Cowork project.
 

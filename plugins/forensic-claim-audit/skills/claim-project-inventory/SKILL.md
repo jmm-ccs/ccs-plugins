@@ -17,9 +17,7 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 - §1 — Output Integrity (the inventory must be factually accurate; if a file's purpose isn't determinable, leave it as *Uncategorized* rather than guess)
 - §9 — How to talk to the user (the missing-items output goes to the user; descriptions, not labels)
 
-Also read `forensic-claim-audit/SKILL.md` Step 0's expected-inputs list so the missing-flag check at Step 4 below has the canonical list.
-
-Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier.
+Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier. The canonical expected-items list for the missing-flag check is this skill's own Step 4 table — no other file needs to be read for it.
 
 ## Step 1 — Walk the workspace
 
@@ -46,8 +44,8 @@ For each file, assign exactly one category based on filename and extension. The 
 | Category | Heuristics |
 |---|---|
 | Video-derived frames and transcripts | Any file inside a `video-intake/` folder (extracted walkthrough frames, `transcript.md`, `intake-manifest.md`) — path match beats every other heuristic |
+| Sample supplement | Filenames containing `sample supplement`, `supplement sample`, `supplement template`, `example supplement` — ranked above Carrier estimate so a sample named with "estimate" doesn't mis-match |
 | Carrier estimate | Filenames containing `xactimate`, `estimate`, `carrier`, `adjuster`, `xc4`/`.esx`/`xceif` extensions; PDFs with `estimate` in the name |
-| Sample supplement | Filenames containing `sample supplement`, `supplement sample`, `supplement template`, `example supplement` |
 | CCS forensic checklists | Filenames containing `checklist`, `forensic claim analysis`, `field scoping` |
 | CCS marketing sheet | Filenames containing `marketing`, `1-sheet`, `one-sheet`, `CCS sheet` |
 | Photos | Image extensions (`.jpg`, `.jpeg`, `.png`, `.heic`, `.tif`, `.tiff`, `.webp`); also iPhone photo patterns (`IMG_*`, `PHOTO-*`, etc.) |
