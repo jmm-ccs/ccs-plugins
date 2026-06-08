@@ -136,7 +136,7 @@ Re-read all four artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-s
 - The deliverables contain no hyperbolic language and no judgmental framing.
 - Audit-Myopia: no entry appears twice in any deliverable.
 
-If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not advance to Phase 5 until every cross-check passes. This phase is load-bearing — by the time the user sees the deliverables, the suggestion list, the XLSX, and the annotated PDF must be a tight three-way match, with no drift introduced by the transformations.
+If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not advance to Phase 5 until every cross-check passes. This phase is load-bearing — by the time the user sees the deliverables, the suggestion list, the XLSX, the annotated PDF, and the supplement package must be a tight match, with no drift introduced by the transformations.
 
 ## Phase 5 — Manual checks reminder
 

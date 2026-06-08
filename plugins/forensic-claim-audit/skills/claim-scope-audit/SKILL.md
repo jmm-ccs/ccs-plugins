@@ -18,10 +18,10 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 - Carrier's estimate (Xactimate PDF or export), **including its sketch/diagram pages**. Use `Read` on it. The estimate is always present, and its diagram pages are the geometric baseline for the whole audit: every room the carrier drew, with dimensions and which rooms adjoin which. The scope walk is based on these diagrams.
 - **Every other file in the project folder.** The comparison set is all of them — photos, video walkthroughs, sketches and floor plans, contractor's scope of work, FNOL narrative, third-party measurement reports (EagleView, HOVER, etc.), drying logs, correspondence, invoices. Don't pre-filter to "visual" documents: a denial letter, an invoice, or the contractor's scope can name a room no photo shows. Use `Read` on each file.
   - **Walkthrough videos are read through their intake output, not the raw file.** If the project folder has a video with a matching `video-intake/<video name>/` folder, `Read` the extracted frames (`frames/`), the narration transcript (`transcript.md`), and the manifest there. If a video has **no** intake folder, run `claim-video-intake` (Read `../claim-video-intake/SKILL.md` and execute it) before starting this stage — the raw video file itself is not readable.
-- The Forensic Claim Analysis Checklists, especially Checklist 2 (Field Scoping) — note that Checklist 2 is a **starting-point guide, not an exhaustive list**; supplement with any reliable, independently-verifiable, industry-standard guidance.
+- The Forensic Claim Analysis Checklists — **optional**: the Checklist 2 (Field Scoping) cues this stage needs are inline below, so a folder without the checklist PDF is fine. If the PDF is present, read it as a supplement to the inline cues (it's a **starting-point guide, not an exhaustive list**; supplement with any reliable, independently-verifiable, industry-standard guidance).
 - The macro-area map (`outputs/macro-areas.md`, §2.8 of the protocols). Use `Read` on it. If it doesn't exist (setup was skipped), establish it first per §2.8 — propose a division from the docs + estimate and confirm with the user — before walking the scope.
 
-If any of the inputs above other than the macro-area map are missing, list what's missing and stop.
+If the carrier's estimate or the project files are missing, list what's missing and stop. (The checklists and the macro-area map are not blockers — the cues are inline and the map gets established here if absent.)
 
 ## Method
 
@@ -58,7 +58,7 @@ This baseline is the industry's own standard, so a carrier estimate that doesn't
 3. **It might have damage.** The evidence is suggestive but unconfirmed — a stain at the edge of a photo, a drying log naming a room no photo covers, a likely moisture-migration path. Flag the room for inspection rather than dropping it.
 4. **It has no damage, but the construction affects it in any way** — crews and materials move through it, it needs protection during the work, demolition dust reaches it, or it loses use while work is underway. These construction-affected rooms are the ones carriers most consistently leave off.
 
-**The chimney is a room.** A chimney (GSO) is treated as its own room on every floor it passes through — not as a feature of whichever room it's photographed from. The same logic applies to other vertical elements spanning floors (chases, stairwells) where the loss involves them.
+**The chimney is a room on every floor it's on.** A chimney (GSO) appears in the room list as its own room on **each** floor it passes through — e.g., *Chimney — Main Floor*, *Chimney — Second Floor*, *Chimney — Attic* — each entry grouped under that floor's macro-area, never as a feature of whichever room it happens to be photographed from. The same goes for similar vertical elements that span floors (chases, stairwells): one room entry per floor. Add these entries to the independent room list (Method step 2) whenever the diagrams, photos, or any project file show the element exists; each floor's entry then goes through the room-inclusion rule like any other room.
 
 Applying this rule is Stage 1's job; pricing what goes *inside* an included room belongs to Stages 2+.
 
@@ -125,7 +125,7 @@ This is a file update, not a suggestion — it doesn't go through the per-sugges
 
 This step runs on **every claim** — with or without a walkthrough video — after the last macro-area's cross-walk is confirmed and **before the stage-end verification gate**. It does two jobs at once: ties every photo to a room so later stages can cite photos by room, and verifies the photos don't show more property than the room list covers. It sits before the gate precisely because the second job can produce scope findings.
 
-1. Use `Read` on each photo. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the cross-walked room list and the diagram adjacencies.
+1. Use `Read` on each photo — but photos already examined during Method step 2 are still in context; don't re-read those, only `Read` photos not yet looked at. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the cross-walked room list and the diagram adjacencies.
 2. Build the full mapping in one pass: a table of photo filename → room → one-line note of what the photo shows.
 3. Every photo must land in exactly one of three places:
    - **A room on the list** — the normal case.

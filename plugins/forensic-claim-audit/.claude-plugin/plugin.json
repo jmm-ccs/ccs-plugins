@@ -1,6 +1,6 @@
 {
   "name": "forensic-claim-audit",
-  "description": "Forensic insurance claim auditing toolkit. Breaks the full supplement audit into 13 discrete skills with shared Factual Integrity protocols and a final supplement generator.",
+  "description": "Forensic insurance claim auditing toolkit. Breaks the full supplement audit into 13 stage skills with shared Factual Integrity protocols, plus setup, intake, and final-delivery skills that produce the suggestion-list XLSX, the annotated carrier PDF, and the supplement package document.",
   "author": {
     "name": "Construction Claim Services",
     "email": "jmm@constructionclaimservices.com"

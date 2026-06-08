@@ -1,6 +1,6 @@
 ---
 name: claim-bilingual-mode
-description: On-demand utility for the CCS forensic claim audit. Turns project-wide Spanish output on or off. When on, the English files stay English, the Spanish lives in separate duplicate files (a Spanish copy of the suggestion list, plus Spanish copies of the exports and annotated PDF), and the per-suggestion approval prompts are shown in Spanish — for the rest of the project. Make sure to use this skill whenever the user says "show the suggestions in Spanish," "in English and Spanish," "make it bilingual," "translate the suggestions," "turn on Spanish," or wants to present the audit to a Spanish-speaking client or policyholder — even if they don't say the word "bilingual." Sets a persistent flag that sticks across chats; invoke again to switch Spanish back off.
+description: On-demand utility for the CCS forensic claim audit. Turns project-wide Spanish output on or off. When on, the English files stay English, the Spanish lives in separate duplicate files (a Spanish copy of the suggestion list, plus Spanish copies of the exports, the annotated PDF, and the supplement package), and the per-suggestion approval prompts are shown in Spanish — for the rest of the project. Make sure to use this skill whenever the user says "show the suggestions in Spanish," "in English and Spanish," "make it bilingual," "translate the suggestions," "turn on Spanish," or wants to present the audit to a Spanish-speaking client or policyholder — even if they don't say the word "bilingual." Sets a persistent flag that sticks across chats; invoke again to switch Spanish back off.
 ---
 
 # Claim Bilingual Mode — English + Spanish, project-wide
@@ -63,7 +63,7 @@ When turning the mode **off**, leave the Spanish duplicate file in place (do not
 State plainly:
 
 - Bilingual mode is now **ON (English + Spanish)** — or **OFF (English only)**.
-- When on: your English files stay untouched; the Spanish lives in a parallel duplicate suggestion list (`outputs/audit-suggestion-list-es.md`), and the exports and annotated PDF get Spanish `-es` copies alongside the English ones. The per-suggestion approval popups are shown in Spanish, while your chat responses stay in English.
+- When on: your English files stay untouched; the Spanish lives in a parallel duplicate suggestion list (`outputs/audit-suggestion-list-es.md`), and the exports, the annotated PDF, and the supplement package get Spanish `-es` copies alongside the English ones. The per-suggestion approval popups are shown in Spanish, while your chat responses stay in English.
 - It **persists for the whole project** (across chats). Every stage from here on will honor it automatically.
 - To change it later, re-run this skill (`/claim-bilingual-mode`) and pick the other option.
 
@@ -79,4 +79,4 @@ Do not start any audit stage or other next step.
 ## Related skills
 
 - `claim-audit-protocols` — §2.11 defines the bilingual rule this skill switches on. Read at Step 0.
-- `claim-suggestion-list-export`, `claim-audit-finalizer`, `claim-pdf-annotator` — when bilingual is on, each also emits a Spanish `-es` copy of its deliverable, built from the Spanish suggestion list (per §2.11), alongside the English one.
+- `claim-suggestion-list-export`, `claim-audit-finalizer`, `claim-pdf-annotator`, `claim-supplement-package` — when bilingual is on, each also emits a Spanish `-es` copy of its deliverable, built from the Spanish suggestion list (per §2.11), alongside the English one.

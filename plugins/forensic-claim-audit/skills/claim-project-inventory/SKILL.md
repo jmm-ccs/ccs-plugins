@@ -17,9 +17,7 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 - §1 — Output Integrity (the inventory must be factually accurate; if a file's purpose isn't determinable, leave it as *Uncategorized* rather than guess)
 - §9 — How to talk to the user (the missing-items output goes to the user; descriptions, not labels)
 
-Also read `forensic-claim-audit/SKILL.md` Step 0's expected-inputs list so the missing-flag check at Step 4 below has the canonical list.
-
-Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier.
+Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier. The canonical expected-items list for the missing-flag check is this skill's own Step 4 table — no other file needs to be read for it.
 
 ## Step 1 — Walk the workspace
 
@@ -46,8 +44,8 @@ For each file, assign exactly one category based on filename and extension. The 
 | Category | Heuristics |
 |---|---|
 | Video-derived frames and transcripts | Any file inside a `video-intake/` folder (extracted walkthrough frames, `transcript.md`, `intake-manifest.md`) — path match beats every other heuristic |
+| Sample supplement | Any filename containing `supplement`. The sample is usually a real supplement from a **past** claim (e.g., "Chattanooga Lake Supplement") — the current claim's supplement doesn't exist yet, so any supplement document among the inputs is the format reference. Ranked above Carrier estimate so a supplement named with "estimate" doesn't mis-match |
 | Carrier estimate | Filenames containing `xactimate`, `estimate`, `carrier`, `adjuster`, `xc4`/`.esx`/`xceif` extensions; PDFs with `estimate` in the name |
-| Sample supplement | Filenames containing `sample supplement`, `supplement sample`, `supplement template`, `example supplement` |
 | CCS forensic checklists | Filenames containing `checklist`, `forensic claim analysis`, `field scoping` |
 | CCS marketing sheet | Filenames containing `marketing`, `1-sheet`, `one-sheet`, `CCS sheet` |
 | Photos | Image extensions (`.jpg`, `.jpeg`, `.png`, `.heic`, `.tif`, `.tiff`, `.webp`); also iPhone photo patterns (`IMG_*`, `PHOTO-*`, etc.) |
@@ -119,7 +117,7 @@ The audit expects each of the following in the project folder. Each entry below 
 |---|---|---|
 | Carrier estimate | Required | The insurance carrier's Xactimate estimate (or PDF/ESX/XCEIF export of it). This is the document the audit reviews against. The audit cannot start without it. |
 | Project documentation (photos, videos, sketches, or floor plans) | Required (at least one) | Visual record of the loss — phone photos from the site walk, the contractor's walk-through video, a hand sketch, a Cubicasa floor plan, or similar. The audit reads these to confirm scope room-by-room (the carrier estimate's own diagram pages carry the room geometry, but an independent visual record of the damage is still needed). At least one of these is required. |
-| Third-party measurement report | Required for roofing / exterior-appurtenance claims | An aerial roof-measurement report from EagleView, HOVER, drone imagery, or equivalent. The audit uses it to cross-check the carrier's roof dimensions, pitch, and exterior-appurtenance quantities against an independent measurement. Required when the loss involves roofing or exterior structures. |
+| Third-party measurement report | Required for roofing / exterior-appurtenance claims | An aerial roof-measurement report from EagleView, HOVER, drone imagery, or equivalent. The audit uses it to cross-check the carrier's roof dimensions, pitch, and exterior-appurtenance quantities against an independent measurement. Required when the loss involves roofing or exterior structures. **Before flagging this missing, `Read` the carrier estimate PDF** — carriers frequently attach the EagleView/HOVER pages inside the estimate itself. If measurement pages are embedded there, it is not missing: note "measurement report included in the carrier estimate (pages N–M)" in the inventory instead. |
 | Contractor scope of work | Strongly recommended | The contractor's own SOW, proposal, or bid for the repair. The audit cross-walks it against the carrier's estimate to surface scope gaps. |
 | Sample supplement | Strongly recommended | An example supplement document, labeled as a sample. It's the format template for the final supplement package — the cover letter's wording, the Alignment Summary's categories, and the layout of the line-item alignment pages all follow it. Final delivery will ask for it if it's not in the folder. |
 | Drying log | Required for water-loss claims | An IICRC S500 drying log — daily atmospheric readings (temperature, relative humidity, GPP), moisture-meter readings, equipment-on-site dates. Required for water losses so Stage 5 (Type-of-Loss Audit, water branch) can verify mitigation scope. Skip this row entirely if this is not a water-loss claim. |
@@ -184,7 +182,7 @@ Do not start any audit stage from this skill.
 ## What this skill does NOT do
 
 - Does not run any audit stage.
-- Does not interpret or analyze file contents (it only categorizes by filename and extension).
+- Does not interpret or analyze file contents (it categorizes by filename and extension) — with one deliberate exception: the Step 4 measurement-report check looks inside the carrier estimate PDF before flagging the report missing, because carriers often embed the EagleView/HOVER pages there.
 - Does not download or pull files from any external service.
 - Does not modify the suggestion list, audit progress, or any other audit state.
 

@@ -473,7 +473,7 @@ outputs/stage-outputs/13-sales-tax.md
 
 **Relationship to the suggestion list.** The suggestion list is the cross-cutting record of *accepted suggestions* (the lines headed for the supplement). A stage output file is the *full work product* of one stage (analysis, all proposals with their dispositions, the rationale and citations). They serve different purposes and both feed the final supplement — the suggestion list says *what to put in the supplement*, the stage outputs say *why*. Don't collapse one into the other.
 
-**The live artifact — one consolidated view, not one per stage.** All stages feed a single live Cowork artifact (base id `claim-audit-findings`, suffixed per the §2.3 per-project rule) built from `forensic-claim-audit/assets/audit-findings-artifact.html`. It rolls every stage's findings into one collapsible view (a section per stage, each with its groups). The artifact is created once per project — at setup (alongside the suggestion-list and progress artifacts), or lazily by the first stage that records findings if this project's backing file `outputs/audit-findings-artifact.html` doesn't exist yet (build from the template, replace `{{PROJECT_NAME}}`, write to `outputs/audit-findings-artifact.html`, `create_artifact` with this project's findings id `claim-audit-findings--<project slug>`).
+**The live artifact — one consolidated view, not one per stage.** All stages feed a single live Cowork artifact (base id `claim-audit-findings`, suffixed per the §2.3 per-project rule) built from `forensic-claim-audit/assets/audit-findings-artifact.html`. It rolls every stage's findings into one collapsible view (a section per stage, each with its groups). The artifact is created once per project — at setup (alongside the suggestion-list and progress artifacts), or lazily by the first stage that records findings if this project's backing file `outputs/audit-findings-artifact.html` doesn't exist yet (build from the template, replace both `{{PROJECT_NAME}}` placeholders, write to `outputs/audit-findings-artifact.html`, `create_artifact` with this project's findings id `claim-audit-findings--<project slug>`).
 
 Each stage **adds or refreshes its own entry** in the `<script id="findings-data">` JSON block — a `{ "num", "name", "groups": [...] }` object where `groups` are the stage's sections (macro-areas, or whatever the stage organizes by), each with a small table — then sets `updated` to the stage-context stamp and calls `update_artifact`. Do not drop other stages' entries when you refresh yours. The per-stage markdown files in `outputs/stage-outputs/` remain the canonical record; this consolidated artifact is convenience only (if they diverge, the markdown is correct).
 
@@ -522,7 +522,7 @@ If the file is missing, the line is missing, or the value is anything other than
 
 - **English stays English, untouched.** The canonical suggestion list (`outputs/audit-suggestion-list.md`), the live on-screen suggestion-list artifact, your chat responses, and every other process surface remain English only. Never inject Spanish into them.
 - **Maintain a parallel Spanish suggestion list.** Keep a duplicate file `outputs/audit-suggestion-list-es.md` that mirrors the English list row-for-row: identical header, identical `#`, identical row order, and every number, code, carrier-line reference, `Suggestion type`, `Label`, and `Disposition` **byte-for-byte identical** — only the descriptive fields (Proposed change, Supporting evidence, Claude notes) are rendered in Spanish. Whenever you append, modify, or re-disposition a row in the English list, make the identical change to the matching row in the Spanish duplicate so the two never drift. Initialize it (header row only) the first time a row is written under bilingual mode; if it is missing when you need it, build it from the current English list.
-- **Spanish duplicates of the deliverables.** Any skill that produces a suggestion-list deliverable produces a parallel Spanish copy from the Spanish list when bilingual is on — **alongside, never replacing** the English one. The XLSX exports get an `-es` sibling (e.g., `audit-suggestion-list-agreed-es.xlsx`, `audit-suggestion-list-es.xlsx`); the PDF annotator produces a Spanish-annotated copy (e.g., the annotated PDF's name with an `-ES` suffix). The English deliverable is unchanged.
+- **Spanish duplicates of the deliverables.** Any skill that produces a suggestion-list deliverable produces a parallel Spanish copy from the Spanish list when bilingual is on — **alongside, never replacing** the English one. The XLSX exports get an `-es` sibling (e.g., `audit-suggestion-list-agreed-es.xlsx`, `audit-suggestion-list-es.xlsx`); the PDF annotator produces a Spanish-annotated copy (e.g., the annotated PDF's name with an `-ES` suffix); the supplement package gets `supplement-package-es.docx` (per that skill's own bilingual rules). The English deliverable is unchanged.
 - **Per-suggestion prompts show Spanish only (§2.3).** When bilingual is on, the `AskUserQuestion` question text — the summary line and its `Why:`/`Source:` lines — is shown in **Spanish only**, with no English in the popup. The four options (Accept / Reject / Modify / Ask a question) stay in English (fixed controls). The English wording of that same suggestion stays in your **chat response** as normal, so the English is always visible there — the popup is simply the Spanish.
 
 **Never translated — keep verbatim in both languages.** The carrier line number and title (quoted from the carrier PDF), all figures (quantities, units, unit prices, M/E/L, percentages), code citations and standard numbers (IICRC S500, etc.), file paths, the `#`, the `Suggestion type` token (Add/Correct/Flag), the `Label` code, and the `Disposition` value. Translate only the explanatory prose around them, and preserve every number and citation exactly — a mistranslated quantity is a factual-integrity failure (§1).
@@ -631,6 +631,8 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
 - **Bilingual handling (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm (a) you did **not** inject Spanish into the English suggestion list, the artifact, or your other English surfaces; (b) every row you added or changed was mirrored into the Spanish duplicate `outputs/audit-suggestion-list-es.md`, with all numbers, codes, and carrier-line references identical to the English row; and (c) each approval prompt was shown in **Spanish only**. If `English`, no Spanish anywhere.
 
+- **Action log (§9.4)**: every tool call this response made has its one-line note.
+
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.
 
 ---
@@ -720,7 +722,7 @@ They're comfortable enough with Windows to create a folder, drag files into it, 
 
 - **Cowork / Claude UI** (unfamiliar to them): button-click granularity. "Click `Projects`. Click `New project`. Click `Start from scratch`." Name the exact button.
 - **Windows / File Explorer** (familiar): high-level. "In File Explorer, create a folder for the claim. Pick somewhere you can easily get to." Don't walk them through right-click → New → Folder.
-- **Your own behavior**: do not narrate it. Never say "I'll now read the protocols" or "I'll use bash to compute…" — the user does not need to hear about your steps. State outcomes, not process. The 4-section format (§3) is the exception: that *is* the user-facing analysis output.
+- **Action log.** Every time a tool is called, write a one-line note of what was just done. Format: past tense, plain language, what was done plus the key detail — *"Updated the suggestion list — added #14 (kitchen subfloor)."* · *"Read the carrier estimate — 14 pages, 96 line items."* No tool names, no file paths, no future tense.
 - **Hiccups and workarounds**: when something internal fails and you recover another way, tell the user — but in plain language anyone could understand, never in internal mechanics. *"The plugin assets aren't reachable from the shell — I'll write the file directly"* fails this; "shell," "assets," "paths," and tool names are all §9.3 words. Say what happened and what it means for them, in their terms: *"Hit a snag making that file the usual way, so I built it directly — nothing changes for you."* When the calculator breaks, follow the §1.4 bash-failure flow exactly.
 - **Concepts**: only explain when the explanation changes what the user does. Multi-session is *"each stage happens in its own chat, all in the same project so your files and progress carry over"* — practical consequence. Not *"the protocols define a mode toggle in §2.7 that…"*
 
@@ -751,7 +753,7 @@ The other rules:
 - "I can't do that here" + one sentence on what they could do instead. Don't apologize. Don't catalog reasons.
 - If a required input is missing, the message must include:
   - Which stage can't start.
-  - Each missing thing described concretely — what it actually is, what it looks like, what the audit needs it for. Use the descriptions from §4 of `claim-project-inventory`.
+  - Each missing thing described concretely — what it actually is, what it looks like, what the audit needs it for. Use the descriptions from Step 4 of `claim-project-inventory`.
   - A direction to drop it in the project folder and tell you when it's there.
 
 Never list missing items by category name only (`drying-log`, `measurement-report`, etc.). That's the bucket; the user needs the *thing*.
@@ -761,11 +763,11 @@ Never list missing items by category name only (`drying-log`, `measurement-repor
 - A single suggestion summary in `AskUserQuestion`: one line.
 - A stage-end gate message: two to four lines.
 - A substantive audit response: the 4-section format in §3 — as long as it needs to be, no longer.
-- A hand-off message (multi-session): use the exact template in §4. Don't add extra.
+- A hand-off message (multi-session): follow the content requirements in §4. Don't add extra.
 
 ### 9.9 Talking about progress and files
 
-- In conversational text, refer to outputs as "the suggestion list" and "your progress", not by filename. Filenames (`outputs/audit-suggestion-list.md`, etc.) belong in the multi-session hand-off message and the finalizer's closing message — places the user might need to actually find a file on disk.
+- In conversational text, refer to outputs as "the suggestion list" and "your progress", not by filename. Filenames (`outputs/audit-suggestion-list.md`, etc.) belong in the finalizer's closing message — the place the user needs to actually find files on disk. The multi-session hand-off carries only the `/command` to type (per §4 — no filenames there).
 - When a suggestion lands in the list, say *"Added — that's #N"*, not *"Appended to outputs/audit-suggestion-list.md as row N with disposition Agreed"*.
 
 ### 9.10 Concrete examples
@@ -788,3 +790,14 @@ Never list missing items by category name only (`drying-log`, `measurement-repor
 **Per-suggestion question — no:**
 
 > I have identified a potential supplement opportunity related to the subfloor companion item that should accompany the flooring tear-out in the kitchen scope per §2.3 of the protocols, specifically the labeling convention for ancillary items. Would you like to discuss whether to incorporate this finding into the suggestion list?
+
+**Action log — yes** (a note for every tool call):
+
+> Listed every file in the project folder — 68 found.
+> Checked the carrier estimate for embedded EagleView pages — none found.
+> Wrote the inventory file.
+> Wrote the spreadsheet copy.
+
+**Action log — no:**
+
+> 68 files found. Writing the inventory now.
