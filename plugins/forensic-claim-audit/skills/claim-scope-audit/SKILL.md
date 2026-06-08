@@ -58,7 +58,7 @@ This baseline is the industry's own standard, so a carrier estimate that doesn't
 3. **It might have damage.** The evidence is suggestive but unconfirmed — a stain at the edge of a photo, a drying log naming a room no photo covers, a likely moisture-migration path. Flag the room for inspection rather than dropping it.
 4. **It has no damage, but the construction affects it in any way** — crews and materials move through it, it needs protection during the work, demolition dust reaches it, or it loses use while work is underway. These construction-affected rooms are the ones carriers most consistently leave off.
 
-**The chimney is a room.** A chimney (GSO) is treated as its own room on every floor it passes through — not as a feature of whichever room it's photographed from. The same logic applies to other vertical elements spanning floors (chases, stairwells) where the loss involves them.
+**The chimney is a room on every floor it's on.** A chimney (GSO) appears in the room list as its own room on **each** floor it passes through — e.g., *Chimney — Main Floor*, *Chimney — Second Floor*, *Chimney — Attic* — each entry grouped under that floor's macro-area, never as a feature of whichever room it happens to be photographed from. The same goes for similar vertical elements that span floors (chases, stairwells): one room entry per floor. Add these entries to the independent room list (Method step 2) whenever the diagrams, photos, or any project file show the element exists; each floor's entry then goes through the room-inclusion rule like any other room.
 
 Applying this rule is Stage 1's job; pricing what goes *inside* an included room belongs to Stages 2+.
 
