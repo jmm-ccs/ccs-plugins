@@ -54,12 +54,13 @@ The progress file (`outputs/audit-progress.md`) carries the macro-areas as sub-p
 13. `claim-sales-tax-audit`
 
 **Output / utilities**
-- `claim-audit-finalizer` — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers dispositions on flagged entries, exports the suggestion list to XLSX (full record — all dispositions), invokes the annotator, then runs a final fact-check across the three artifacts (markdown / XLSX / annotated PDF) to verify they faithfully match each other.
+- `claim-audit-finalizer` — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers dispositions on flagged entries, exports the suggestion list to XLSX (full record — all dispositions), invokes the annotator and the supplement package, then runs a final fact-check across the deliverables (markdown / XLSX / annotated PDF / package) to verify they faithfully match each other.
+- `claim-supplement-package` — the supplement document deliverable, built from the `Agreed` entries after the Sanity Audit: a cover letter duplicating the project's Sample Supplement verbatim (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and one line-item alignment per entry in the sample's exact format. Requires the Sample Supplement in the project folder. Saved as `outputs/supplement-package.docx`.
 - `claim-pdf-annotator` — on-demand utility, callable at any point during or after the audit. Reads the suggestion list and the carrier PDF, produces an annotated copy of the PDF with each non-rejected suggestion attached as a PDF comment at the carrier line it modifies. The finalizer auto-invokes this; the user can also invoke it standalone for a current snapshot.
 - `claim-suggestion-list-export` — on-demand utility. Exports only the **Agreed** entries from the suggestion list to `outputs/audit-suggestion-list-agreed.xlsx` (the CCS working set). Independent of the finalizer's full-record XLSX — the two outputs coexist. Use mid-audit any time CCS wants a fresh spreadsheet of the accepted suggestions.
 - `claim-project-inventory` — pre-flight document inventory. Walks the workspace, categorizes every file (carrier estimate, photos, sketches/floor plans, scope of work, measurement reports, drying logs, invoices, checklists, marketing sheets, etc.), flags expected-but-missing categories, and writes both `outputs/project-inventory.md` and `outputs/project-inventory.xlsx`. Invoked automatically by `claim-audit-setup` as part of the multi-session initialization, and also runnable on its own any time the user wants a fresh inventory.
 
-CCS uses the deliverables (suggestion list, XLSX, annotated PDF) alongside Xactimate to build the actual carrier-facing supplement. Claude does not produce that supplement.
+CCS builds the line-item supplement estimate in Xactimate from the XLSX; the supplement package (cover letter + Alignment Summary + alignments, formatted per the project's Sample Supplement) is the carrier-facing document that travels with it.
 
 ## How the skills relate
 
@@ -80,10 +81,12 @@ scope → line-item → completeness → related-items → type-of-loss
 outputs/stage-outputs/NN-slug.md  (all rolled into one live "audit findings" artifact)
     ↓ at end of audit
 claim-audit-finalizer (Sanity Audit → full XLSX export → final fact-check)
-    └ invokes ─→ claim-pdf-annotator
-                 (also callable standalone any time)
+    ├ invokes ─→ claim-pdf-annotator
+    │            (also callable standalone any time)
+    └ invokes ─→ claim-supplement-package
+                 (cover letter + Alignment Summary + alignments, per the Sample Supplement)
     ↓ produces in outputs/:
-audit-suggestion-list.xlsx  +  [carrier-pdf-name]-annotated.pdf
+audit-suggestion-list.xlsx  +  [carrier-pdf-name]-annotated.pdf  +  supplement-package.docx
 
 claim-suggestion-list-export  (on-demand; mid-audit or post-audit)
     ↓ produces:  outputs/audit-suggestion-list-agreed.xlsx  (Agreed-only working set)

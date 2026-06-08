@@ -116,15 +116,16 @@ Provide comprehensive analysis and actionable recommendations without artificial
 
 #### What the audit produces
 
-The audit does **not** produce a rewritten or alternative estimate, and it does **not** produce a carrier-facing supplement document. It produces a set of *suggestions* referenced against the carrier's existing line items. CCS uses Xactimate (separately, after the audit) to build the actual carrier-facing supplement, drawing from these suggestions.
+The audit does **not** produce a rewritten or alternative estimate. It produces a set of *suggestions* referenced against the carrier's existing line items. CCS uses Xactimate (separately, after the audit) to build the line-item supplement estimate, drawing from these suggestions.
 
-The carrier never sees Claude's output directly. CCS-internal deliverables come out of an audit:
+The deliverables that come out of an audit:
 
 1. **The suggestion list** (always, throughout the audit) — a markdown file CCS reviews and works from. Detailed below. The canonical record of every suggestion, regardless of disposition.
 2. **The annotated carrier PDF** — produced on demand by the `claim-pdf-annotator` skill. Callable at any point in the audit (mid-audit for a snapshot, or at final delivery). Duplicates the carrier PDF and attaches each suggestion-list suggestion as a PDF comment — tagged with its disposition — at the location of the carrier line item it modifies.
 3. **The XLSX export of the suggestion list** — produced by the `claim-audit-finalizer` skill at final delivery (after the Sanity Audit and disposition decisions are locked in). Sortable and filterable for CCS to work from while building the supplement in Xactimate.
+4. **The supplement package** — produced by the `claim-supplement-package` skill at final delivery, from the `Agreed` entries only. A Word document following the project's Sample Supplement: a cover letter duplicating the sample verbatim (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and one line-item alignment per `Agreed` entry in the sample's exact format. This is the carrier-facing document that travels with the Xactimate supplement.
 
-The finalizer also invokes the PDF annotator as part of its closing flow, so a final-delivery run produces both the XLSX and a fresh annotated PDF together.
+The finalizer also invokes the PDF annotator and the supplement package as part of its closing flow, so a final-delivery run produces the XLSX, a fresh annotated PDF, and the package together.
 
 Xactimate's own internal note system is not writable from outside the application, which is why annotation lives on a duplicated PDF rather than inside the carrier's actual estimate file.
 
@@ -668,6 +669,7 @@ Several protocol directives translate to specific tools. Use them rather than na
 | Append to / update the suggestion list | `Read` then `Write` (or `Edit`) on `outputs/audit-suggestion-list.md` |
 | Annotate the carrier PDF with comments (any time, on demand or at final delivery) | `pdf` skill (used by `claim-pdf-annotator`) |
 | Export the suggestion list to spreadsheet at final delivery | `xlsx` skill (used by `claim-audit-finalizer`) |
+| Generate the supplement package document at final delivery | `docx` skill (used by `claim-supplement-package`, following the project's Sample Supplement) |
 | Ask the user to choose between options when the path forward isn't unambiguous | `AskUserQuestion` |
 
 If a directive seems to require a tool that isn't available in the current environment, flag the gap to the user — do not improvise.
