@@ -1,13 +1,13 @@
 ---
 name: claim-audit-finalizer
-description: Final-delivery stage of the CCS forensic claim audit. Runs the Supplement Sanity Audit (factual integrity, alignment with the CCS objective, friction-flagging), gathers user dispositions on every flagged entry, exports the suggestion list to XLSX, and invokes the claim-pdf-annotator skill to produce the annotated carrier PDF. Trigger after the Sales Tax Audit, or when the user says "ready for output," "finalize the audit," "produce the deliverables," or "wrap up the audit." This is the closing skill of the 13-stage pipeline.
+description: Final-delivery stage of the CCS forensic claim audit. Runs the Supplement Sanity Audit (factual integrity, alignment with the CCS objective, friction-flagging), gathers user dispositions on every flagged entry, exports the suggestion list to XLSX, invokes claim-pdf-annotator for the annotated carrier PDF, and invokes claim-supplement-package for the supplement document built on the project's Sample Supplement. Trigger after the Sales Tax Audit, or when the user says "ready for output," "finalize the audit," "produce the deliverables," or "wrap up the audit." This is the closing skill of the 13-stage pipeline.
 ---
 
 # Claim Audit Finalizer (Output Step)
 
-Goal: close out the audit. Run the Sanity Audit, lock in user decisions on flagged entries, and produce both deliverables (XLSX export of the suggestion list + annotated carrier PDF) for CCS to use alongside Xactimate when building the carrier-facing supplement.
+Goal: close out the audit. Run the Sanity Audit, lock in user decisions on flagged entries, and produce the three deliverables: the XLSX export of the suggestion list, the annotated carrier PDF, and the supplement package document (cover letter + Alignment Summary + line-item alignments, formatted per the project's Sample Supplement).
 
-CCS will use these deliverables to build the actual carrier-facing supplement in Xactimate. Claude does not produce that supplement.
+CCS builds the line-item estimate itself in Xactimate from the XLSX; the supplement package is the formatted document that presents the corrections to the carrier alongside it.
 
 ## Step 0 — Read the protocols
 
@@ -98,11 +98,17 @@ Use the `Read` tool on `../claim-pdf-annotator/SKILL.md` and execute that skill 
 
 Wait for the annotator to confirm completion (and report any entries it couldn't locate on the PDF).
 
+## Phase 3b — Generate the supplement package
+
+Use the `Read` tool on `../claim-supplement-package/SKILL.md` and execute that skill end-to-end. It reads the project's Sample Supplement and the post-Sanity-Audit suggestion list, and produces `outputs/supplement-package.docx` — cover letter (sample's form and wording verbatim, project info swapped), Alignment Summary (per the sample), and one line-item alignment per `Agreed` entry in the sample's exact format.
+
+If the Sample Supplement isn't in the project folder, the package skill will ask for it — the other deliverables stand on their own, so if the user prefers to skip the package for this claim, note the skip and continue to Phase 4 (drop the package from the Phase 4 checks and the closing message).
+
 ## Phase 4 — Final fact-check of the deliverables
 
-Phase 1's Sanity Audit checked the *suggestion-list entries themselves*. Phase 4 is a separate check that the *deliverables* faithfully represent those entries — the markdown → XLSX export and the suggestion-list → PDF annotation are both transformations, and either could silently drop or corrupt an entry.
+Phase 1's Sanity Audit checked the *suggestion-list entries themselves*. Phase 4 is a separate check that the *deliverables* faithfully represent those entries — the markdown → XLSX export, the suggestion-list → PDF annotation, and the suggestion-list → supplement package are all transformations, and any could silently drop or corrupt an entry.
 
-Re-read all three artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-suggestion-list.xlsx`, and `outputs/[carrier-pdf-name]-annotated.pdf`. Then verify:
+Re-read all four artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-suggestion-list.xlsx`, `outputs/[carrier-pdf-name]-annotated.pdf`, and `outputs/supplement-package.docx` (skip the package checks if it was skipped in Phase 3b). Then verify:
 
 **Markdown ↔ XLSX cross-check.**
 
@@ -117,6 +123,12 @@ Re-read all three artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-
 - Each PDF comment reproduces its suggestion-list entry — disposition, suggestion type, label, proposed change, number provenance, supporting evidence — with the exact wording from the suggestion list.
 - Each PDF comment is anchored at the correct carrier line item.
 
+**Markdown ↔ supplement package cross-check.**
+
+- Every `Agreed` entry has exactly one line-item alignment in the package; no alignment exists without an `Agreed` entry behind it. Count both via `bash`; the counts must match.
+- Every figure in the package matches its suggestion-list entry byte-for-byte (spot-check three entries in detail).
+- The cover letter matches the Sample Supplement's letter verbatim except the swapped contractor/adjuster/policyholder info.
+
 **Final factual-integrity-and-logic pass on the whole output** (per §3 of the protocols).
 
 - Every fact in any user-facing summary you produce in this stage has provenance.
@@ -128,7 +140,7 @@ If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not a
 
 ## Phase 5 — Manual checks reminder
 
-After both deliverables are in place, tell the user the files are saved and present the six checks below for them to run themselves. The message:
+After the deliverables are in place, tell the user the files are saved and present the six checks below for them to run themselves. The message:
 
 - Opens with one sentence saying the files are saved and these checks are load-bearing.
 - Lists the six checks below, in this order, in the same plain-English action voice.
@@ -147,15 +159,15 @@ These checks are load-bearing. Do not skip the reminder, and do not let the user
 
 ## Verification gate
 
-After both deliverables are produced and the manual-checks reminder has been delivered, write a short closing message. It includes:
+After the deliverables are produced and the manual-checks reminder has been delivered, write a short closing message. It includes:
 
-- Both file paths (`outputs/audit-suggestion-list.xlsx` and `outputs/[carrier-pdf-name]-annotated.pdf`) so the user can find them.
+- The file paths (`outputs/audit-suggestion-list.xlsx`, `outputs/[carrier-pdf-name]-annotated.pdf`, and `outputs/supplement-package.docx` if produced) so the user can find them.
 - That the checks above are what they should run on those files.
 - That confirming closes out the audit.
 
 Two sentences max.
 
-If the user invokes HALT or requests revisions, follow §6 of the protocols: stop, re-anchor against the carrier PDF using `Read`, update the affected suggestion-list entry, and re-run only Phase 2 and Phase 3 to refresh the deliverables. Do not regenerate from scratch unless the user asks.
+If the user invokes HALT or requests revisions, follow §6 of the protocols: stop, re-anchor against the carrier PDF using `Read`, update the affected suggestion-list entry, and re-run only Phases 2, 3, and 3b to refresh the deliverables. Do not regenerate from scratch unless the user asks.
 
 ## Re-invoking the annotator separately
 
