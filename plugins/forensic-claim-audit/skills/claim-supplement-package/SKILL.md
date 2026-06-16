@@ -1,13 +1,15 @@
 ---
 name: claim-supplement-package
-description: Final-delivery deliverable of the CCS forensic claim audit. Generates the ready-to-upload supplement package — a Word document with a cover letter duplicating the project's Sample Supplement (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and line-item alignments in the sample's exact format — built from the Agreed entries in the suggestion list after the Sanity Audit. Trigger when the user says "generate the supplement package," "produce the supplement document," "build the cover letter and alignments," or as Phase 3b of claim-audit-finalizer. Requires the Sample Supplement file in the project folder.
+description: SUPERSEDED legacy deliverable of the CCS forensic claim audit. Generated a Word supplement document — cover letter duplicating the project's Sample Supplement (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and line-item alignments in the sample's exact format — built from the Agreed entries in the suggestion list. The audit's carrier-facing deliverable is now the marked-up copy of the carrier's estimate (see claim-pdf-annotator / claim-audit-finalizer); the finalizer no longer invokes this skill. Run it only when a project specifically wants the legacy supplement document. Requires the Sample Supplement file in the project folder.
 ---
 
-# Claim Supplement Package (Final-Delivery Deliverable)
+# Claim Supplement Package (Superseded Legacy Deliverable)
 
-Goal: produce the "ready-to-upload" supplement document from the original CCS output process — written from the contractor, following the format of the project's Sample Supplement — generated from the suggestion list after the Sanity Audit has locked it in.
+> **Superseded.** The audit's carrier-facing deliverable is now the **marked-up copy of the carrier's estimate** — the full estimate reproduced with CCS's edits applied in-line (changed values and new lines in green, a justification box beneath each), produced by `claim-pdf-annotator` and invoked by `claim-audit-finalizer` at final delivery. That marked-up estimate replaces this changes-only/addendum-style Word document, so the standard output flow no longer produces this package and the finalizer no longer invokes it. This skill remains in the plugin only for projects that specifically want the legacy supplement document; if you're closing out an audit the normal way, you do not need it.
 
-This is the document deliverable that travels with the Xactimate supplement. CCS still builds the line-item estimate itself in Xactimate from the XLSX; this package is the formatted document — cover letter, Alignment Summary, line-item alignments — that presents those corrections to the carrier.
+Goal (when explicitly requested): produce the legacy "ready-to-upload" supplement document from the original CCS output process — written from the contractor, following the format of the project's Sample Supplement — generated from the suggestion list after the Sanity Audit has locked it in.
+
+This is the legacy document deliverable that used to travel with the Xactimate supplement. CCS still builds the line-item estimate itself in Xactimate from the XLSX; this package is the formatted document — cover letter, Alignment Summary, line-item alignments — that presents those corrections to the carrier. (The marked-up copy of the carrier's estimate now does this job in context on the carrier's own estimate.)
 
 ## Step 0 — Read the protocols
 
@@ -76,7 +78,7 @@ The package can be regenerated any time after the Sanity Audit (e.g., a disposit
 
 ## Related skills
 
-- `claim-audit-finalizer` — runs the Sanity Audit, then invokes this skill as Phase 3b of final delivery.
+- `claim-pdf-annotator` — produces the **marked-up copy of the carrier's estimate**, the deliverable that supersedes this legacy package. This is what final delivery now produces.
+- `claim-audit-finalizer` — runs the Sanity Audit and final delivery. It produces the XLSX and invokes the estimate markup; it **no longer invokes this skill**. Run this package on its own only if a project specifically wants the legacy document, after the finalizer's Sanity Audit has locked in the list.
 - `claim-suggestion-list-export` — the Agreed-only XLSX working set; the same entries this package formats.
-- `claim-pdf-annotator` — the annotated carrier PDF; the third deliverable alongside the XLSX and this package.
 - `claim-project-inventory` — flags a missing Sample Supplement before the audit starts.

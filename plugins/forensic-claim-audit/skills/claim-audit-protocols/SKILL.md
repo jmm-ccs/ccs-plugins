@@ -94,7 +94,7 @@ This is **not optional**, and it is **not** satisfied by the math provenance in 
 
 **Where it is enforced — all three surfaces carry the same plain-language Why + source:**
 
-- **The suggestion list** — the Why and the named source live in the `Supporting evidence` field (§2.3), so they flow automatically into the XLSX export and the annotated carrier PDF that reviewers read.
+- **The suggestion list** — the Why and the named source live in the `Supporting evidence` field (§2.3), so they flow automatically into the XLSX export and into the justification boxes on the marked-up copy of the carrier's estimate that reviewers read.
 - **The per-suggestion prompt** — stated in plain language both in the chat note immediately before each per-suggestion `AskUserQuestion` *and inside the `AskUserQuestion` question text itself* (§2.3), so the user can review the basis and decide from the question alone without scrolling back.
 - **The 4-section analysis** — spelled out in the Analysis section of every substantive response (§3).
 
@@ -121,17 +121,18 @@ The audit does **not** produce a rewritten or alternative estimate. It produces 
 The deliverables that come out of an audit:
 
 1. **The suggestion list** (always, throughout the audit) — a markdown file CCS reviews and works from. Detailed below. The canonical record of every suggestion, regardless of disposition.
-2. **The annotated carrier PDF** — produced on demand by the `claim-pdf-annotator` skill. Callable at any point in the audit (mid-audit for a snapshot, or at final delivery). Duplicates the carrier PDF and attaches each suggestion-list suggestion as a PDF comment — tagged with its disposition — at the location of the carrier line item it modifies.
+2. **The marked-up copy of the carrier's estimate** (the end deliverable) — produced on demand by the `claim-pdf-annotator` skill. Callable at any point in the audit (mid-audit for a snapshot, or at final delivery). It reproduces the **full** carrier estimate — every room, category, and line item, in the carrier's order and numbering — and applies CCS's edits in place: changed values and new lines rendered in **green**, with a justification box directly beneath every change reading *"[x] changed from [old] to [new] for [reason]"* (the reason is the suggestion's plain-language Why + Source per §1.5). Each box also carries the entry's disposition, suggestion type, and label. This is not a changes-only list and not a separate addendum — it is the whole original estimate with the corrections made in-line, so the carrier sees every change in context on their own estimate.
 3. **The XLSX export of the suggestion list** — produced by the `claim-audit-finalizer` skill at final delivery (after the Sanity Audit and disposition decisions are locked in). Sortable and filterable for CCS to work from while building the supplement in Xactimate.
-4. **The supplement package** — produced by the `claim-supplement-package` skill at final delivery, from the `Agreed` entries only. A Word document following the project's Sample Supplement: a cover letter duplicating the sample verbatim (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and one line-item alignment per `Agreed` entry in the sample's exact format. This is the carrier-facing document that travels with the Xactimate supplement.
 
-The finalizer also invokes the PDF annotator and the supplement package as part of its closing flow, so a final-delivery run produces the XLSX, a fresh annotated PDF, and the package together.
+The finalizer also invokes the estimate markup as part of its closing flow, so a final-delivery run produces the XLSX and a fresh marked-up estimate together.
 
-Xactimate's own internal note system is not writable from outside the application, which is why annotation lives on a duplicated PDF rather than inside the carrier's actual estimate file.
+(**Superseded:** earlier versions also produced a separate Word supplement document via `claim-supplement-package` — a cover letter, Alignment Summary, and line-item alignments per the project's Sample Supplement. The marked-up copy of the carrier's estimate now replaces that as the carrier-facing deliverable. That skill remains in the plugin for projects that specifically want the legacy document, but it is no longer part of the standard output flow and the finalizer no longer invokes it.)
+
+Xactimate's own internal note system is not writable from outside the application, which is why the marked-up estimate is rendered on a reproduced copy of the carrier PDF rather than inside the carrier's actual estimate file.
 
 #### The suggestion list — the audit's source of truth
 
-The suggestion list is the persistent artifact that accumulates across all 13 audit stages. `claim-pdf-annotator` reads it on demand to produce the annotated PDF; `claim-audit-finalizer` reads it at final delivery to produce the XLSX export and to invoke the annotator as part of closing the audit.
+The suggestion list is the persistent artifact that accumulates across all 13 audit stages. `claim-pdf-annotator` reads it on demand to produce the marked-up copy of the carrier's estimate; `claim-audit-finalizer` reads it at final delivery to produce the XLSX export and to invoke the markup as part of closing the audit.
 
 **Where it lives.** The project folder is the Cowork workspace — already attached at the start of any audit. Do not ask the user to identify it; just operate inside the workspace. Create an `outputs/` sub-folder inside the workspace if it doesn't exist. The suggestion list goes in that sub-folder as `audit-suggestion-list.md`. Other audit deliverables (the annotated PDF, the exported XLSX, the live-artifact HTML) also go in `outputs/`. This `outputs/` folder is project-specific (one per claim).
 
@@ -240,14 +241,14 @@ The markdown is canonical. If the artifact and the markdown ever diverge, the ma
 
 - At the start of every stage, after `Read`ing the protocols and the stage skill, also `Read` the suggestion list, the macro-area map (`outputs/macro-areas.md`, see §2.8), and — if it exists — the photo map (`outputs/photo-map.md`, written at the end of Stage 1; maps each project photo to a confirmed room so photos are cited by room). All are part of working state — they must be in attention for the new stage.
 - For the Scope Creep / Audit-Myopia check (§2.4), `Read` the suggestion list to verify the new suggestion does not duplicate any prior entry.
-- The `claim-pdf-annotator` skill `Read`s the suggestion list whenever it is invoked (annotator places every suggestion-list entry on the PDF, tagged with its disposition, regardless of stage).
-- The `claim-audit-finalizer` skill `Read`s the suggestion list at final delivery to run the Sanity Audit, gather user dispositions, export to XLSX, and invoke the annotator.
+- The `claim-pdf-annotator` skill `Read`s the suggestion list whenever it is invoked (the markup applies every suggestion-list entry as an in-line edit on the reproduced estimate, each tagged with its disposition in the justification box, regardless of stage).
+- The `claim-audit-finalizer` skill `Read`s the suggestion list at final delivery to run the Sanity Audit, gather user dispositions, export to XLSX, and invoke the markup.
 
-(All suggestion-list entries — `Agreed`, `Halted`, and `Needs-info` — appear in the full XLSX export and on the annotated PDF, each tagged with its disposition. The `claim-suggestion-list-export` utility produces the `Agreed`-only working set when CCS wants just the supplement-bound lines. The user reviews any `Halted` or `Needs-info` entries during the Sanity Audit.)
+(All suggestion-list entries — `Agreed`, `Halted`, and `Needs-info` — appear in the full XLSX export and on the marked-up estimate, each tagged with its disposition. The `claim-suggestion-list-export` utility produces the `Agreed`-only working set when CCS wants just the supplement-bound lines. The user reviews any `Halted` or `Needs-info` entries during the Sanity Audit.)
 
 #### Labeling rules
 
-Whether the suggestion lives in the suggestion list or as a comment on the annotated PDF, the labeling rules below identify each suggestion relative to the carrier's existing nomenclature.
+Whether the suggestion lives in the suggestion list or as an in-line edit on the marked-up estimate, the labeling rules below identify each suggestion relative to the carrier's existing nomenclature. They also fix **where each green addition is placed** on the marked-up estimate.
 
 When a new item is proposed:
 
@@ -262,7 +263,7 @@ If the carrier's original estimate already uses an alphanumeric sub-item structu
 - Ancillary additions become `Supp-1a`, `Supp-1b`, `Supp-47a`, etc.
 - The same `Supp-New` label still applies for room-level and category-level additions.
 
-The principle is: anyone reading the suggestion list or the annotated PDF should be able to glance at any suggestion and tell that it is ours, not the carrier's, with zero ambiguity.
+The principle is: anyone reading the suggestion list or the marked-up estimate should be able to glance at any suggestion and tell that it is ours, not the carrier's, with zero ambiguity. (On the marked-up estimate the green rendering reinforces this — every CCS edit is green, the carrier's untouched content stays black.)
 
 ### 2.4 Scope Creep / Audit-Myopia Check
 
@@ -669,9 +670,8 @@ Several protocol directives translate to specific tools. Use them rather than na
 | "Look at the photos" / "check the project documentation" | `Read` (on image files in the user's project folder) |
 | Read a walkthrough video | `Read` on its extracted frames and transcript in `video-intake/<video name>/` — never the raw video file. If that folder doesn't exist, the video hasn't been processed: run `claim-video-intake` (which uses `bash` with ffmpeg + Whisper) first |
 | Append to / update the suggestion list | `Read` then `Write` (or `Edit`) on `outputs/audit-suggestion-list.md` |
-| Annotate the carrier PDF with comments (any time, on demand or at final delivery) | `pdf` skill (used by `claim-pdf-annotator`) |
+| Produce the marked-up copy of the carrier's estimate — reproduce it in full and apply the in-line green edits + justification boxes (any time, on demand or at final delivery) | `pdf` skill (used by `claim-pdf-annotator`) |
 | Export the suggestion list to spreadsheet at final delivery | `xlsx` skill (used by `claim-audit-finalizer`) |
-| Generate the supplement package document at final delivery | `docx` skill (used by `claim-supplement-package`, following the project's Sample Supplement) |
 | Ask the user to choose between options when the path forward isn't unambiguous | `AskUserQuestion` |
 
 If a directive seems to require a tool that isn't available in the current environment, flag the gap to the user — do not improvise.

@@ -1,13 +1,13 @@
 ---
 name: claim-audit-finalizer
-description: Final-delivery stage of the CCS forensic claim audit. Runs the Supplement Sanity Audit (factual integrity, alignment with the CCS objective, friction-flagging), gathers user dispositions on every flagged entry, exports the suggestion list to XLSX, invokes claim-pdf-annotator for the annotated carrier PDF, and invokes claim-supplement-package for the supplement document built on the project's Sample Supplement. Trigger after the Sales Tax Audit, or when the user says "ready for output," "finalize the audit," "produce the deliverables," or "wrap up the audit." This is the closing skill of the 13-stage pipeline.
+description: Final-delivery stage of the CCS forensic claim audit. Runs the Supplement Sanity Audit (factual integrity, alignment with the CCS objective, friction-flagging), gathers user dispositions on every flagged entry, exports the suggestion list to XLSX, and invokes claim-pdf-annotator to produce the audit's end deliverable — a marked-up copy of the carrier's estimate with CCS's edits applied in-line (changed values and new lines in green, a justification box under each). Trigger after the Sales Tax Audit, or when the user says "ready for output," "finalize the audit," "produce the deliverables," or "wrap up the audit." This is the closing skill of the 13-stage pipeline.
 ---
 
 # Claim Audit Finalizer (Output Step)
 
-Goal: close out the audit. Run the Sanity Audit, lock in user decisions on flagged entries, and produce the three deliverables: the XLSX export of the suggestion list, the annotated carrier PDF, and the supplement package document (cover letter + Alignment Summary + line-item alignments, formatted per the project's Sample Supplement).
+Goal: close out the audit. Run the Sanity Audit, lock in user decisions on flagged entries, and produce the two deliverables: the XLSX export of the suggestion list (the CCS working set), and the audit's end deliverable — **a marked-up copy of the carrier's estimate** with CCS's edits applied in place (the full estimate reproduced, changed values and new lines in green, a justification box beneath every change).
 
-CCS builds the line-item estimate itself in Xactimate from the XLSX; the supplement package is the formatted document that presents the corrections to the carrier alongside it.
+CCS builds the line-item estimate itself in Xactimate from the XLSX; the marked-up estimate copy is the carrier-facing deliverable that shows every correction in context, directly on the carrier's own estimate.
 
 ## Step 0 — Read the protocols
 
@@ -90,25 +90,19 @@ Use the `xlsx` skill:
 
 Confirm the XLSX was written successfully before moving to Phase 3.
 
-**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish duplicate `outputs/audit-suggestion-list-es.xlsx`, built from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` (same all-entries scope, same columns; numbers, codes, and carrier-line references identical, descriptive fields in Spanish). Write it **alongside** the English XLSX. The annotator (Phase 3) produces the Spanish-annotated PDF on its own when bilingual is on.
+**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish duplicate `outputs/audit-suggestion-list-es.xlsx`, built from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` (same all-entries scope, same columns; numbers, codes, and carrier-line references identical, descriptive fields in Spanish). Write it **alongside** the English XLSX. The estimate markup (Phase 3) produces the Spanish marked-up estimate on its own when bilingual is on.
 
-## Phase 3 — Invoke the PDF annotator
+## Phase 3 — Invoke the estimate markup (the end deliverable)
 
-Use the `Read` tool on `../claim-pdf-annotator/SKILL.md` and execute that skill end-to-end. The annotator reads the suggestion list, duplicates the carrier PDF, and places comments at each relevant carrier line. It will save the annotated PDF as `outputs/[carrier-pdf-name]-annotated.pdf`.
+Use the `Read` tool on `../claim-pdf-annotator/SKILL.md` and execute that skill end-to-end. It reads the suggestion list, reproduces the full carrier estimate as a copy, and applies CCS's edits in place — changed values and new lines in green, a justification box beneath every change reading "[x] changed from [old] to [new] for [reason]." It saves the marked-up estimate as `outputs/[carrier-pdf-name]-annotated.pdf`.
 
-Wait for the annotator to confirm completion (and report any entries it couldn't locate on the PDF).
-
-## Phase 3b — Generate the supplement package
-
-Use the `Read` tool on `../claim-supplement-package/SKILL.md` and execute that skill end-to-end. It reads the project's Sample Supplement and the post-Sanity-Audit suggestion list, and produces `outputs/supplement-package.docx` — cover letter (sample's form and wording verbatim, project info swapped), Alignment Summary (per the sample), and one line-item alignment per `Agreed` entry in the sample's exact format.
-
-If the Sample Supplement isn't in the project folder, the package skill will ask for it — the other deliverables stand on their own, so if the user prefers to skip the package for this claim, note the skip and continue to Phase 4 (drop the package from the Phase 4 checks and the closing message).
+This marked-up copy of the carrier's estimate is the audit's end deliverable. Wait for the markup to confirm completion (and report any entries it couldn't locate on the estimate).
 
 ## Phase 4 — Final fact-check of the deliverables
 
-Phase 1's Sanity Audit checked the *suggestion-list entries themselves*. Phase 4 is a separate check that the *deliverables* faithfully represent those entries — the markdown → XLSX export, the suggestion-list → PDF annotation, and the suggestion-list → supplement package are all transformations, and any could silently drop or corrupt an entry.
+Phase 1's Sanity Audit checked the *suggestion-list entries themselves*. Phase 4 is a separate check that the *deliverables* faithfully represent those entries — the markdown → XLSX export and the suggestion-list → marked-up estimate are both transformations, and either could silently drop or corrupt an entry.
 
-Re-read all four artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-suggestion-list.xlsx`, `outputs/[carrier-pdf-name]-annotated.pdf`, and `outputs/supplement-package.docx` (skip the package checks if it was skipped in Phase 3b). Then verify:
+Re-read all three artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-suggestion-list.xlsx`, and `outputs/[carrier-pdf-name]-annotated.pdf`. Then verify:
 
 **Markdown ↔ XLSX cross-check.**
 
@@ -116,18 +110,13 @@ Re-read all four artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-s
 - Every field value matches between markdown and XLSX (no truncation, no misordering, no character-encoding changes). Spot-check three random entries in detail.
 - The XLSX is sorted by Stage of origin, then by Carrier line item number, with header row frozen.
 
-**Markdown ↔ annotated PDF cross-check.**
+**Markdown ↔ marked-up estimate cross-check.**
 
-- Every suggestion-list entry (`Agreed`, `Halted`, or `Needs-info`) has a corresponding comment on the annotated PDF.
-- No comment exists on the PDF that doesn't trace back to a suggestion-list entry.
-- Each PDF comment reproduces its suggestion-list entry — disposition, suggestion type, label, proposed change, number provenance, supporting evidence — with the exact wording from the suggestion list.
-- Each PDF comment is anchored at the correct carrier line item.
-
-**Markdown ↔ supplement package cross-check.**
-
-- Every `Agreed` entry has exactly one line-item alignment in the package; no alignment exists without an `Agreed` entry behind it. Count both via `bash`; the counts must match.
-- Every figure in the package matches its suggestion-list entry byte-for-byte (spot-check three entries in detail).
-- The cover letter matches the Sample Supplement's letter verbatim except the swapped contractor/adjuster/policyholder info.
+- The marked-up estimate reproduces the **full** carrier estimate — every room, category, and line item the carrier wrote, in the carrier's order and numbering. Nothing the carrier wrote is dropped.
+- Every suggestion-list entry (`Agreed`, `Halted`, or `Needs-info`) appears as a green edit on the estimate — a changed value, a new line, or a flag — with a justification box beneath it.
+- No green edit exists on the estimate that doesn't trace back to a suggestion-list entry.
+- Each justification box reproduces its entry's `[x] changed from [old] to [new] for [reason]` line — with `[old]` matching the carrier estimate, `[new]` and `[reason]` (the plain-language Why + Source) matching the suggestion list's `Proposed change` and `Supporting evidence` byte-for-byte — plus the entry's disposition, suggestion type, and label.
+- Each edit is anchored at the correct carrier line item, and for a Correct entry only the field the suggestion changes is green (§1.1).
 
 **Final factual-integrity-and-logic pass on the whole output** (per §3 of the protocols).
 
@@ -136,7 +125,7 @@ Re-read all four artifacts: `outputs/audit-suggestion-list.md`, `outputs/audit-s
 - The deliverables contain no hyperbolic language and no judgmental framing.
 - Audit-Myopia: no entry appears twice in any deliverable.
 
-If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not advance to Phase 5 until every cross-check passes. This phase is load-bearing — by the time the user sees the deliverables, the suggestion list, the XLSX, the annotated PDF, and the supplement package must be a tight match, with no drift introduced by the transformations.
+If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not advance to Phase 5 until every cross-check passes. This phase is load-bearing — by the time the user sees the deliverables, the suggestion list, the XLSX, and the marked-up estimate must be a tight match, with no drift introduced by the transformations.
 
 ## Phase 5 — Manual checks reminder
 
@@ -152,7 +141,7 @@ The six checks:
 2. Read every suggestion's *Proposed change* and *Number provenance*. The language should be factual; the math should be reproducible.
 3. Confirm specs match the home — no high-grade finishes specified in a low-grade home.
 4. Re-run three random calculated numbers in a calculator or spreadsheet. They should land on the same result.
-5. Walk the carrier PDF top to bottom and confirm no rooms or line items got skipped on the supplement side.
+5. Walk the carrier PDF top to bottom against the marked-up estimate and confirm no rooms or line items got skipped — every carrier line is reproduced, and every correction landed on the right one.
 6. Any single line whose dollar impact looks disproportionate to construction reality — that's a goal-seeking flag. Flag it now.
 
 These checks are load-bearing. Do not skip the reminder, and do not let the user skip the checks.
@@ -161,14 +150,18 @@ These checks are load-bearing. Do not skip the reminder, and do not let the user
 
 After the deliverables are produced and the manual-checks reminder has been delivered, write a short closing message. It includes:
 
-- The file paths (`outputs/audit-suggestion-list.xlsx`, `outputs/[carrier-pdf-name]-annotated.pdf`, and `outputs/supplement-package.docx` if produced) so the user can find them.
+- The file paths (`outputs/audit-suggestion-list.xlsx` and `outputs/[carrier-pdf-name]-annotated.pdf`) so the user can find them.
 - That the checks above are what they should run on those files.
 - That confirming closes out the audit.
 
 Two sentences max.
 
-If the user invokes HALT or requests revisions, follow §6 of the protocols: stop, re-anchor against the carrier PDF using `Read`, update the affected suggestion-list entry, and re-run only Phases 2, 3, and 3b to refresh the deliverables. Do not regenerate from scratch unless the user asks.
+If the user invokes HALT or requests revisions, follow §6 of the protocols: stop, re-anchor against the carrier PDF using `Read`, update the affected suggestion-list entry, and re-run only Phases 2 and 3 to refresh the deliverables. Do not regenerate from scratch unless the user asks.
 
-## Re-invoking the annotator separately
+## Re-invoking the estimate markup separately
 
-The PDF annotator is independent — the user can re-invoke `claim-pdf-annotator` at any point (during or after the audit) to refresh the annotated PDF without re-running the full finalizer. Useful when the user marks an entry's disposition after the audit closes and wants a fresh PDF without redoing the Sanity Audit.
+The estimate markup (`claim-pdf-annotator`) is independent — the user can re-invoke it at any point (during or after the audit) to refresh the marked-up estimate without re-running the full finalizer. Useful when the user marks an entry's disposition after the audit closes and wants a fresh marked-up copy without redoing the Sanity Audit.
+
+## On the supplement package (superseded)
+
+Earlier versions of this finalizer also produced a separate Word supplement document (cover letter + Alignment Summary + line-item alignments, per the project's Sample Supplement) via `claim-supplement-package`. The marked-up copy of the carrier's estimate now **replaces** that changes-only/addendum-style document as the audit's carrier-facing deliverable — the corrections live in context on the carrier's own estimate, not in a separate package. The finalizer no longer invokes `claim-supplement-package`. (The skill remains in the plugin and can still be run on its own if a project specifically wants the legacy document, but it is redundant to the standard output flow.)
