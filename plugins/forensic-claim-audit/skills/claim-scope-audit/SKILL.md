@@ -5,7 +5,7 @@ description: Stage 1 of the CCS forensic claim audit. Audit the overall scope of
 
 # Scope Audit (Stage 1 of 13)
 
-Goal: produce an authoritative list of rooms and categories that should appear in the supplement, comparing the carrier's estimate against project documentation.
+Goal: produce an authoritative list of rooms and categories that should appear in the corrected estimate, comparing the carrier's estimate against project documentation.
 
 ## Step 0 — Read the protocols
 

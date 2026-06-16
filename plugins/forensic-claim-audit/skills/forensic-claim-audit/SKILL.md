@@ -1,6 +1,6 @@
 ---
 name: forensic-claim-audit
-description: Run the full 13-stage CCS forensic insurance claim audit end-to-end on a property insurance estimate. Use for any prompt like "audit this claim," "build a supplement," "run the full forensic audit," "review the carrier estimate," or whenever the user uploads a carrier estimate plus project files. Walks scope → line items → type-of-loss → code/ordinance → trades → sales tax with verify-then-advance gates between every stage. Hands off to claim-audit-finalizer at the end, which runs the Sanity Audit, exports the suggestion list to XLSX, invokes claim-pdf-annotator for the annotated carrier PDF, and invokes claim-supplement-package for the supplement document.
+description: Run the full 13-stage CCS forensic insurance claim audit end-to-end on a property insurance estimate. Use for any prompt like "audit this claim," "build a supplement," "run the full forensic audit," "review the carrier estimate," or whenever the user uploads a carrier estimate plus project files. Walks scope → line items → type-of-loss → code/ordinance → trades → sales tax with verify-then-advance gates between every stage. Hands off to claim-audit-finalizer at the end, which runs the Sanity Audit, exports the suggestion list to XLSX, and invokes claim-pdf-annotator to produce the marked-up copy of the carrier's estimate (the audit's end deliverable).
 ---
 
 # Forensic Claim Audit — Master Orchestrator
@@ -112,7 +112,7 @@ If the user invokes HALT or pushes back on a finding, follow §6 of the protocol
 
 ## Step 14 — Output
 
-The Stage 13 gate (handled by the loop in "How to walk the stages" → §4 of the protocols → single-session branch) will have already issued the *"Ready for Output Process."* prompt. When the user replies "begin output process" (or equivalent), use `Read` on `../claim-audit-finalizer/SKILL.md` and execute it. The finalizer runs the Supplement Sanity Audit, flags items that might trigger insurance-fight or homeowner-negotiation friction (asks the user about each), exports the suggestion list to XLSX, invokes `claim-pdf-annotator` to produce the annotated carrier PDF, and invokes `claim-supplement-package` to produce the supplement document (cover letter + Alignment Summary + line-item alignments, per the project's Sample Supplement). All deliverables land in `outputs/` in the project folder. CCS builds the line-item supplement estimate in Xactimate from the XLSX; the package is the document that travels with it.
+The Stage 13 gate (handled by the loop in "How to walk the stages" → §4 of the protocols → single-session branch) will have already issued the *"Ready for Output Process."* prompt. When the user replies "begin output process" (or equivalent), use `Read` on `../claim-audit-finalizer/SKILL.md` and execute it. The finalizer runs the Supplement Sanity Audit, flags items that might trigger insurance-fight or homeowner-negotiation friction (asks the user about each), exports the suggestion list to XLSX, and invokes `claim-pdf-annotator` to produce the marked-up copy of the carrier's estimate — the full carrier estimate reproduced with CCS's edits applied in-line (changed values and new lines in green, a justification box under each change/addition). All deliverables land in `outputs/` in the project folder. CCS builds the line-item supplement estimate in Xactimate from the XLSX; the marked-up estimate is the carrier-facing document that travels with it.
 
 The PDF annotator is also available as a standalone skill the user can invoke any time during the audit to get a current snapshot of the suggestion list rendered onto the carrier PDF.
 
@@ -127,7 +127,7 @@ If a stage seems to require a tool that isn't available, stop and tell the user 
 
 ## When the user wants to skip stages
 
-Some claims don't need every stage. If the user wants to skip one (e.g., no appurtenances on a condo unit), confirm by reading back what they're skipping and why, then proceed to the next stage. Note the skip in the final supplement so the carrier sees the audit was deliberate, not incomplete.
+Some claims don't need every stage. If the user wants to skip one (e.g., no appurtenances on a condo unit), confirm by reading back what they're skipping and why, then proceed to the next stage. Note the skip in the marked-up estimate so the carrier sees the audit was deliberate, not incomplete.
 
 ## When responses start drifting
 
