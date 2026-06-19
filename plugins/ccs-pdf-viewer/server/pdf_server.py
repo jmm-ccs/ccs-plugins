@@ -22,7 +22,7 @@ import sys
 import time
 
 SERVER_NAME = "ccs-pdf-viewer"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.2.0"
 DEFAULT_PROTOCOL = "2025-06-18"
 MAX_BYTES = 80 * 1024 * 1024  # 80 MB guard on a single read
 MAX_LIST = 500  # cap directory listings
@@ -158,6 +158,112 @@ def _err_text(msg):
     return {"content": [{"type": "text", "text": msg}], "isError": True}
 
 
+def _load_fitz():
+    try:
+        import fitz  # PyMuPDF
+        return fitz, None
+    except Exception:
+        return None, _err_text(
+            "PDF rendering needs PyMuPDF (not installed). Install it once with: "
+            "/usr/bin/python3 -m pip install --user pymupdf"
+        )
+
+
+def _resolve_pdf(args):
+    """Shared validation: returns (realpath, None) or (None, error_dict)."""
+    roots = allowed_roots()
+    path = (args or {}).get("path")
+    if not path:
+        return None, _err_text("Missing required argument 'path'.")
+    if not path.lower().endswith(".pdf"):
+        return None, _err_text("Path is not a .pdf file: %s" % path)
+    rp = within_roots(path, roots)
+    if not rp:
+        return None, _err_text(
+            "Path is outside the allowed roots. Allowed: "
+            + ", ".join(roots)
+            + ". Set CCS_PDF_ROOTS to add locations."
+        )
+    if not os.path.isfile(rp):
+        return None, _err_text("File not found: %s" % rp)
+    return rp, None
+
+
+def do_pdf_info(args):
+    rp, err = _resolve_pdf(args)
+    if err:
+        return err
+    fitz, ferr = _load_fitz()
+    if ferr:
+        return ferr
+    try:
+        doc = fitz.open(rp)
+        pages = [
+            {"width": round(p.rect.width, 1), "height": round(p.rect.height, 1)}
+            for p in doc
+        ]
+        n = doc.page_count
+        doc.close()
+    except Exception as e:
+        return _err_text("Could not read PDF: %s" % e)
+    return {
+        "content": [{"type": "text", "text": "%s: %d page(s)." % (os.path.basename(rp), n)}],
+        "structuredContent": {
+            "path": rp,
+            "name": os.path.basename(rp),
+            "page_count": n,
+            "pages": pages,
+        },
+    }
+
+
+def do_render_page(args):
+    rp, err = _resolve_pdf(args)
+    if err:
+        return err
+    a = args or {}
+    try:
+        page_no = int(a.get("page", 1))
+    except (TypeError, ValueError):
+        return _err_text("'page' must be an integer (1-based).")
+    try:
+        scale = float(a.get("scale", 1.5))
+    except (TypeError, ValueError):
+        scale = 1.5
+    scale = max(0.5, min(4.0, scale))
+    fitz, ferr = _load_fitz()
+    if ferr:
+        return ferr
+    try:
+        doc = fitz.open(rp)
+        n = doc.page_count
+        if page_no < 1 or page_no > n:
+            doc.close()
+            return _err_text("Page %d out of range (1..%d)." % (page_no, n))
+        pix = doc[page_no - 1].get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
+        png = pix.tobytes("png")
+        w, h = pix.width, pix.height
+        doc.close()
+    except Exception as e:
+        return _err_text("Render failed: %s" % e)
+    b64 = base64.b64encode(png).decode("ascii")
+    return {
+        "content": [{
+            "type": "text",
+            "text": "Rendered page %d at %gx (%dx%d px)." % (page_no, scale, w, h),
+        }],
+        "structuredContent": {
+            "path": rp,
+            "page": page_no,
+            "scale": scale,
+            "width": w,
+            "height": h,
+            "mime": "image/png",
+            "base64": b64,
+        },
+    }
+
+
 TOOLS = [
     {
         "name": "list_pdfs",
@@ -198,9 +304,51 @@ TOOLS = [
         },
         "annotations": {"readOnlyHint": True, "openWorldHint": False},
     },
+    {
+        "name": "pdf_info",
+        "description": (
+            "Return a PDF's page count and each page's width/height in points, so "
+            "the viewer can lay out pages before rendering them."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Absolute path to the .pdf file."}
+            },
+            "required": ["path"],
+            "additionalProperties": False,
+        },
+        "annotations": {"readOnlyHint": True, "openWorldHint": False},
+    },
+    {
+        "name": "render_page",
+        "description": (
+            "Render one page of a local PDF to a PNG image (returned as base64) for "
+            "display in the viewer. Use a higher 'scale' for sharper zoomed-in pages."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Absolute path to the .pdf file."},
+                "page": {"type": "integer", "description": "1-based page number.", "minimum": 1},
+                "scale": {
+                    "type": "number",
+                    "description": "Zoom factor, 1.0 = 72 dpi. Clamped to 0.5-4.0. Default 1.5.",
+                },
+            },
+            "required": ["path", "page"],
+            "additionalProperties": False,
+        },
+        "annotations": {"readOnlyHint": True, "openWorldHint": False},
+    },
 ]
 
-HANDLERS = {"list_pdfs": do_list_pdfs, "read_pdf_base64": do_read_pdf_base64}
+HANDLERS = {
+    "list_pdfs": do_list_pdfs,
+    "read_pdf_base64": do_read_pdf_base64,
+    "pdf_info": do_pdf_info,
+    "render_page": do_render_page,
+}
 
 
 def send(obj):
