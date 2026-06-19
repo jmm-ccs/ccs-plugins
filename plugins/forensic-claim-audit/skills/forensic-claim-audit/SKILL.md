@@ -54,6 +54,8 @@ This skill is the single-session entry point. Before doing anything else, check 
 
 ### Step 0.5.1 — Create the workspace files
 
+**Idempotency (§2.14).** If `outputs/audit-progress.md` already exists with real audit state, you're resuming an existing audit — preserve it. The per-item "if it doesn't already exist" / "leave it as-is" guards below ensure re-running never clobbers prior work; the only field this orchestrator deliberately rewrites is the `**Mode:**` line (to `single-session`), per Step 0.5.0.
+
 1. **Create the `outputs/` sub-folder** inside the workspace if it doesn't already exist. If the folder is not writable, use `AskUserQuestion` to ask the user where to put `outputs/` and create it there.
 
 2. **Initialize `outputs/audit-suggestion-list.md`** with the table headers from §2.3 if the file doesn't already exist (resuming a prior audit, leave it as-is).
@@ -74,7 +76,7 @@ This skill is the single-session entry point. Before doing anything else, check 
 
 8. **Confirm and move on.** One short sentence: setup is done, Stage 1 is starting. No re-explanation of what got set up. Then proceed to Stage 1.
 
-This same workspace-creation flow runs automatically when any individual stage skill is invoked standalone — every stage's Step 0 reads the protocols, and the protocols' §2.3 + §2.6 Initialization specs trigger the same setup (defaulting the Mode line to `multi-session`, per §2.7). Step 0.5 here just makes it explicit at the master-orchestrator level and adds the mode-check that's specific to invoking the orchestrator (which writes `single-session` after the user confirms). The explicit multi-session counterpart, `claim-audit-setup`, runs the same workspace-creation up front and writes `multi-session` deliberately, then stops without starting Stage 1.
+Workspace creation belongs to setup — this orchestrator (which runs setup inline) and `claim-audit-setup`. Individual stage skills **no longer** self-create the workspace: per §2.14 of the protocols, a stage invoked without an active project (no `outputs/audit-progress.md`) refuses and sends the user to `/claim-audit-setup` rather than initializing anything. Step 0.5 here is the orchestrator's inline setup, plus the mode-check specific to invoking the orchestrator (which writes `single-session` after the user confirms). The explicit multi-session counterpart, `claim-audit-setup`, runs the same workspace-creation up front and writes `multi-session` deliberately, then stops without starting Stage 1.
 
 ## How to walk the stages
 

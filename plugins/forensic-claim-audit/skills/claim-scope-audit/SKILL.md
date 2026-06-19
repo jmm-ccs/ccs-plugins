@@ -13,15 +13,23 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 **§1.5 reminder — every suggestion this stage raises needs its plain-language Why + Source.** In basic language: what's wrong or missing and why the fix is justified, plus the basis it rests on — a named project file, a verified citation, or an openly flagged judgment call. No Why or no Source means it isn't ready: don't propose it and don't record it (§1.5 completeness gate, §2.3).
 
+## Prerequisite — enforced gate (refuse until met)
+
+Run this check before any Scope Audit work, per §2.14 of the protocols. Re-check on every attempt — never warn once and proceed.
+
+**Active project.** `outputs/audit-progress.md` must exist (setup has run). The Scope Audit does **not** create the workspace — setup does. If that file doesn't exist, refuse: tell the user to run `/claim-audit-setup` first, then stop. Keep refusing every time until setup has actually run.
+
+Scope is Stage 1, so it has no prior audit stage — setup having run is its only sequencing precondition. Once it passes, proceed.
+
 ## Inputs you need
 
 - Carrier's estimate (Xactimate PDF or export), **including its sketch/diagram pages**. Use `Read` on it. The estimate is always present, and its diagram pages are the geometric baseline for the whole audit: every room the carrier drew, with dimensions and which rooms adjoin which. The scope walk is based on these diagrams.
 - **Every other file in the project folder.** The comparison set is all of them — photos, video walkthroughs, sketches and floor plans, contractor's scope of work, FNOL narrative, third-party measurement reports (EagleView, HOVER, etc.), drying logs, correspondence, invoices. Don't pre-filter to "visual" documents: a denial letter, an invoice, or the contractor's scope can name a room no photo shows. Use `Read` on each file.
   - **Walkthrough videos are read through their intake output, not the raw file.** If the project folder has a video with a matching `video-intake/<video name>/` folder, `Read` the extracted frames (`frames/`), the narration transcript (`transcript.md`), and the manifest there. If a video has **no** intake folder, run `claim-video-intake` (Read `../claim-video-intake/SKILL.md` and execute it) before starting this stage — the raw video file itself is not readable.
 - The Forensic Claim Analysis Checklists — **optional**: the Checklist 2 (Field Scoping) cues this stage needs are inline below, so a folder without the checklist PDF is fine. If the PDF is present, read it as a supplement to the inline cues (it's a **starting-point guide, not an exhaustive list**; supplement with any reliable, independently-verifiable, industry-standard guidance).
-- The macro-area map (`outputs/macro-areas.md`, §2.8 of the protocols). Use `Read` on it. If it doesn't exist (setup was skipped), establish it first per §2.8 — propose a division from the docs + estimate and confirm with the user — before walking the scope.
+- The macro-area map (`outputs/macro-areas.md`, §2.8 of the protocols). Use `Read` on it. Setup creates it, and the Prerequisite gate above guarantees setup has run — so it will be present. If `outputs/audit-progress.md` exists but the map doesn't, setup didn't finish: stop and route the user to re-run `/claim-audit-setup` (per §2.14), rather than building the map here.
 
-If the carrier's estimate or the project files are missing, list what's missing and stop. (The checklists and the macro-area map are not blockers — the cues are inline and the map gets established here if absent.)
+If the carrier's estimate or the project files are missing, list what's missing and stop. (The checklists are not a blocker — the cues are inline. The macro-area map comes from setup, which the Prerequisite gate above has already confirmed ran.)
 
 ## Method
 

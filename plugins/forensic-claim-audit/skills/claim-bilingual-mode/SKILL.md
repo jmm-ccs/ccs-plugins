@@ -19,6 +19,14 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read it end-to-en
 
 Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier in the conversation.
 
+## Prerequisite — enforced gate (refuse until met)
+
+Run this before changing anything, per §2.14 of the protocols. Re-check on every attempt.
+
+**Active project.** `outputs/audit-progress.md` must exist (setup has run) — the `**Languages:**` flag lives in that file, and this skill does **not** create the workspace; setup does. If the file doesn't exist, refuse: tell the user to run `/claim-audit-setup` first, then send `/claim-bilingual-mode` again. Stop.
+
+Proceed only when it passes.
+
 ## Step 1 — Locate the project state
 
 The project folder is the Cowork workspace, already attached. Do not ask the user to identify it; operate inside the workspace. Ensure the `outputs/` sub-folder exists.
@@ -26,7 +34,7 @@ The project folder is the Cowork workspace, already attached. Do not ask the use
 `Read` `outputs/audit-progress.md`:
 
 - **If it exists**, find the current `**Languages:**` line (directly under `**Mode:**`). If there is no such line, the current setting is the default, **English** only.
-- **If it does not exist**, the audit hasn't been set up yet. You can still record the preference: create `outputs/audit-progress.md` following the §2.6 structure — a `# Audit Progress` header, `**Mode:** multi-session`, the `**Languages:**` line set per Step 3, then the 13 stage headings plus Final Delivery, each `Not started` and without area sub-points (no map exists yet). This is a valid §2.6 progress file, so `claim-audit-setup` and the stage skills will preserve it rather than overwrite it. Tell the user the audit isn't set up yet, but their language preference is now recorded and will apply the moment they start.
+- **If it does not exist**, the Prerequisite gate above has already refused and stopped — you never reach this step without an active project. (This is why the skill no longer pre-creates a bare progress file: per §2.14, the active-project signal must mean setup actually ran, so only setup creates `outputs/audit-progress.md`.)
 
 ## Step 2 — Decide the direction (and confirm)
 

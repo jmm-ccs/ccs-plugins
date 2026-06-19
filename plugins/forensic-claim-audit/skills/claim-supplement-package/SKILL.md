@@ -15,9 +15,14 @@ This is the legacy document deliverable that used to travel with the Xactimate s
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else. Do this every time this skill is invoked. Critical here: §1.1 (the package contains nothing the suggestion list doesn't), §1.4 (every number copied verbatim, no recomputation drift), §1.5 (each alignment carries its plain-language Why + Source), §2.3 (labeling rules — `b`/`c`/`d`, `Supp-1a`, `Supp-New`), §2.11 (bilingual mode), and §9 (voice).
 
-## Prerequisite
+## Prerequisite — enforced gate (refuse until met)
 
-The Sanity Audit (Phase 1 of `claim-audit-finalizer`) has run, so the suggestion list reflects locked-in decisions. If the finalizer hasn't run, tell the user this package is built from the post-Sanity-Audit list and route them to `claim-audit-finalizer` first — generating it from an un-sanity-checked list produces a document CCS can't send.
+Run this check before any work, per §2.14 of the protocols. Re-check on every attempt — never warn once and proceed. (This is a superseded legacy deliverable; the audit's carrier-facing output is now the marked-up estimate from `claim-pdf-annotator`. Run it only when a project specifically wants the legacy document.)
+
+1. **Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, refuse and tell the user to run `/claim-audit-setup` first, then stop.
+2. **Finalizer has run.** The Sanity Audit (Phase 1 of `claim-audit-finalizer`) must have run, so the suggestion list reflects locked-in decisions. If it hasn't — Final Delivery is not yet `Complete` in `outputs/audit-progress.md` — refuse, tell the user this package is built from the post-Sanity-Audit list, route them to `/claim-audit-finalizer` first, and stop. Generating it from an un-sanity-checked list produces a document CCS can't send.
+
+Proceed only when both pass.
 
 ## Inputs
 

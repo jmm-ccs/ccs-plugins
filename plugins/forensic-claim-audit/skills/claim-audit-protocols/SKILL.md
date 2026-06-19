@@ -158,7 +158,7 @@ The suggestion list is the persistent artifact that accumulates across all 13 au
 | Claude notes | Free-form annotations Claude writes about the entry. Required whenever disposition is `Needs-info` — the note must specify exactly what information is missing and what would unblock the entry (e.g., "needs a moisture-meter reading on the north wall before this can be quantified," or "needs the contractor's invoice for the roof-decking discovery"). Also used for any other Claude-side context worth recording on the entry (e.g., "rate verified at FL DOR 2026 schedule, URL in verified-facts section"). |
 | Disposition | `Agreed` (default for any accepted suggestion, whether or not the user modified it before accepting), `Halted` (§6 invoked on this entry), or `Needs-info` (waiting on contractor input before final delivery — the Claude notes column must say what info is needed) |
 
-**Initialization (run once before any audit work, every conversation — whether the user is invoking the master orchestrator or a single stage skill standalone).**
+**Initialization (run by setup only — `claim-audit-setup`, or `forensic-claim-audit` running setup inline; see §2.14).** Setup is the one and only thing that initializes the workspace. A stage or utility that finds the workspace missing does **not** initialize it — it refuses per the §2.14 active-project gate and sends the user to `/claim-audit-setup`. The steps below are what setup runs.
 
 The project folder is the Cowork workspace, already attached. Do not ask the user to identify it; just operate inside the workspace.
 
@@ -283,7 +283,7 @@ The audit has a separate live progress artifact (Cowork id `claim-audit-progress
 
 The state file is `outputs/audit-progress.md`. The markdown is canonical; the artifact is convenience. If they ever diverge, the markdown is correct.
 
-**Initialization (run alongside the §2.3 suggestion-list initialization).**
+**Initialization (run by setup, alongside the §2.3 suggestion-list initialization — see §2.14; stages and utilities gate on this file rather than create it).**
 
 If `outputs/audit-progress.md` doesn't exist, create it with the structure below — a `**Mode:**` line on top (the audit-mode toggle, see §2.7) followed by one heading per stage (Stages 1–13 + Final Delivery), each with status `Not started`. The default mode is `multi-session` (each stage runs in its own chat in the same Cowork project); the master orchestrator (`forensic-claim-audit`) writes `single-session` instead when invoked end-to-end.
 
@@ -345,7 +345,7 @@ If this project's live progress artifact doesn't exist — the check is the back
 - A short parenthetical context note after a status is fine (e.g., "Skipped — condo, no appurtenances"). Do **not** put clock timestamps anywhere.
 - After **every** status change (stage heading or area sub-point), refresh the artifact: rebuild the HTML from the template (with the new state embedded as JSON), then call `mcp__cowork__update_artifact` with this project's progress artifact id (per-project rule, §2.3) and the refreshed file path.
 
-The progress tracking applies whether the audit is run via the master orchestrator or via individual stage skills standalone — every stage skill reads these protocols and is responsible for updating progress when invoked.
+The progress tracking applies whether the audit is run via the master orchestrator or via individual stage skills in their own chats — every stage skill reads these protocols and updates progress when it runs (after the §2.14 active-project gate confirms setup has run).
 
 ### 2.7 Audit mode toggle (single-session vs. multi-session)
 
@@ -427,7 +427,7 @@ The `**Last updated:**` line is a stage/step context stamp, never a clock time �
 - **Updated** by the Scope Audit (Stage 1). Once the true scope is confirmed, Stage 1 reconciles `outputs/macro-areas.md`: assign any newly-found rooms to the right macro-area, add a new macro-area if a whole new section surfaced (e.g., a crawlspace nobody scoped), and update the `**Last updated:**` stamp to `after Stage 1 (Scope) confirmation`.
 - **Read** at the start of every stage (alongside the protocols, the stage skill, and the suggestion list).
 
-**If the map is missing when a stage starts.** A stage skill can be invoked standalone in a fresh project that never ran setup. If `outputs/macro-areas.md` doesn't exist when a stage begins, establish it first — propose a division from the docs + estimate, confirm with the user — before doing the stage's area-by-area walk. Do not run a stage without a confirmed macro-area map.
+**If the map is missing when a stage starts.** Setup creates the macro-area map, and the §2.14 active-project gate ensures setup has run — so normally the map already exists when a stage begins. If `outputs/audit-progress.md` exists but `outputs/macro-areas.md` does not, setup did not finish: stop and route the user to re-run `/claim-audit-setup`, rather than building the map mid-stage. Do not run a stage without a confirmed macro-area map.
 
 **The per-macro-area gate.** Each stage walks the macro-areas in the order the map lists them. When a stage finishes a macro-area, ask a short procedural gate before moving to the next one (per §3 / §4 — short and direct, not 4-section):
 
@@ -531,6 +531,63 @@ If the file is missing, the line is missing, or the value is anything other than
 **Translation standard.** Clear, professional, neutral Spanish suitable for an insurance/construction audit (understandable across Latin American and US-Hispanic audiences). If a construction term has no clean Spanish equivalent, give the Spanish then the English in parentheses, e.g. `tablaroca (drywall)`.
 
 This applies to **all 13 stages and every skill** for the rest of the project, because every skill reads these protocols and the `**Languages:**` line each session. It is not a per-response choice — it is on until turned off.
+
+### 2.12 Generative self-interrogation — never cap at a checklist
+
+Every checklist in this plugin (the frequently-missed categories, the companion-items-by-trade table, the peril references, the appurtenance list, the common-trades and common-permits lists, etc.) is a **floor, not a ceiling.** Each one guarantees the obvious things get checked. None of them is the full set of what *could* be checked about the thing in front of you. Treating a checklist as the complete list is the single biggest way this audit leaves money on the table.
+
+**The rule.** For every single thing the audit touches — every file, every room, every line item, every material, every photo and every object visible in it, every quantity, every assembly — *before* you measure it against any list, first ask the generative question:
+
+> *"What is everything that could be checked about this?"*
+
+Generate that question set yourself, from the thing in front of you, then run it. The starter checklist is **one input** to that set, never a replacement for it. You are responsible for the questions the checklist's author never thought to write down.
+
+**Work a thousand steps back.** The failure mode is auditing at the level of *"is this line priced right?"* when the decisive questions live several inferential steps upstream. Force the chain out:
+
+- What *is* this thing, specifically? (make, model, material, grade, age, rating, code class, what it connects to)
+- What does that specific identity *imply* — about its installation, its compatibility with what it touches, its legality today, whether it can be replaced like-for-like, the standards it must now meet?
+- What does each implication, in turn, imply? Keep going until the chain stops producing new, checkable questions.
+- *Only then:* does the carrier's treatment of this thing satisfy every question the chain produced?
+
+*Illustration only — do not hardcode these as "the checks":* an air handler tagged R-22 → R-22 is a phased-out refrigerant → it can't be recharged or reinstalled like-for-like → its matched condenser must therefore be replaced too, even if undamaged → and the replacement system must meet *current* efficiency and code. Proper self-interrogation surfaces that entire chain from the single fact "R-22," unprompted. The value is not the R-22 answer — it is the *habit* that produced it. Run that habit on everything the audit touches.
+
+**It is fine to keep and grow the starter checklists** in these skills — they make the obvious checks reliable. What is never acceptable is letting the checklist *cap* the inquiry. Run the list **and** the questions the list didn't contain.
+
+**Where it shows up.** When a suggestion came from a question no checklist contained, say so in the §3 Analysis — name the chain of reasoning that produced it. That is the visible evidence the self-interrogation actually ran, and it is exactly the kind of finding CCS is paying for.
+
+### 2.13 Examine what's already in the claim as deeply as what's missing
+
+Every stage already hunts for what the carrier *missed* — omitted rooms, absent line items, dropped companion items, un-scoped code upgrades. **Keep that hunt at full strength. Nothing in this section reduces it.**
+
+**Added on top of it:** apply the same forensic depth — the full §2.12 self-interrogation — to every line item the carrier *did* include. An item being present on the estimate is not evidence that it is correct. For each existing line, go past *"is it here?"* to the whole set of questions §2.12 generates about it: is the quantity right for the real measured scope, is the unit price current for this jurisdiction, are Material / Equipment / Labor each present where they belong, is the waste factor appropriate, is the grade matched to the actual finish, is it even the right line code for what the work truly is, does its presence imply companion or downstream work that isn't here? A present-but-wrong line is as much a finding as a missing one, and it is found only by examining what's already there as hard as you look for what's not.
+
+**This is depth, not priority.** Do not rank present-item scrutiny ahead of missing-item detection, and do not trade one off against the other — they run at full strength at the same time. The reason this is written as *added depth* and never as *"prioritize"*: telling the audit to prioritize one thing quietly slackens everything else, and the missed-item hunt must never slacken. Both are the job, fully, simultaneously.
+
+### 2.14 Preconditions & sequencing — refuse until valid, every time
+
+A skill in this plugin runs **only** when it is actually valid to run it. Before doing any of its own work, every skill checks its own preconditions and, if they are not met, **refuses and stops** — with a plain-language instruction for exactly what to do first. It does not warn once and proceed. It does not remember that it warned: the check is re-run from scratch on every invocation, and the skill keeps refusing **every time** until the preconditions are genuinely met.
+
+This is enforcement, not advice. *"The user clearly wants to keep going"* is not a reason to proceed past an unmet precondition — the point of this section is that the process **cannot be run any way other than as intended.**
+
+**The precondition kinds.** Each skill names which apply to it (in its own Prerequisite section); this section defines the mechanism.
+
+1. **Active-project gate.** Audit work happens only inside an **active claim project.** A folder being attached or mounted is **not** sufficient on its own — an active project is one whose audit workspace has been initialized. The concrete signal is: **`outputs/audit-progress.md` exists** in the workspace. If it does not exist, there is no active project — refuse, and tell the user to run `/claim-audit-setup` first (one plain line). Re-check on every attempt.
+
+   Initializing that workspace is the job of **setup only** — `claim-audit-setup`, or `forensic-claim-audit`, which runs the same setup inline. **No stage and no utility lazily creates the workspace.** If it's missing, they refuse and send the user to setup. This supersedes any older "create it if it doesn't exist" phrasing elsewhere in these protocols: the create path belongs to setup; everyone else gates on it.
+
+2. **Sequencing gate.** Each audit stage is valid only when the stage before it is done. Before working, a stage reads `outputs/audit-progress.md` and confirms its **immediately-prior stage is `Complete` or `Skipped`.** If it isn't, refuse and point the user at the correct earlier command. Stage 1 (Scope) has no prior stage — its sequencing precondition is simply that setup has run (the active-project gate above). That is exactly why the Scope Audit refuses until setup has been run and keeps refusing until it has. Re-check on every attempt.
+
+   Utilities that depend on audit state carry their own version of this (e.g., the estimate markup and the XLSX export refuse if the suggestion list has no accepted entries yet; the finalizer refuses until Stage 13 is `Complete`). Each utility's Prerequisite names its specific gate.
+
+3. **Idempotency gate (setup).** Setup must not silently clobber an audit that already exists. Before initializing anything, setup checks whether the project was already set up — the same signal: does `outputs/audit-progress.md` already exist with real audit state in it? If so, setup does **not** proceed. It confirms first, via `AskUserQuestion`, with this question:
+
+   > "This project has already been set up. Are you sure you want to set it up again? This could erase some of your previous work."
+
+   Only an explicit yes re-runs setup. Anything else stops without touching a file.
+
+**Generalize the pattern.** Every stage and every utility gets a precondition check of this shape at its start, **immediately after it reads the protocols** — find the analogue of the out-of-project problem for that specific skill and guard it. A skill with no meaningful precondition beyond "a project exists" still runs the active-project gate. The default posture is: verify first, refuse clearly if not valid, only then do the work.
+
+**How to refuse.** A refusal is short, plain (§9 voice), and actionable: one line on why it can't run yet, one line on the exact command to run first. No 4-section analysis, no apology, no audit work of any kind. Then stop, and re-evaluate from scratch the next time the skill is invoked.
 
 ---
 
@@ -656,6 +713,9 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
 - **Bilingual handling (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm (a) you did **not** inject Spanish into the English suggestion list, the artifact, or your other English surfaces; (b) every row you added or changed was mirrored into the Spanish duplicate `outputs/audit-suggestion-list-es.md`, with all numbers, codes, and carrier-line references identical to the English row; and (c) each approval prompt was shown in **Spanish only**. If `English`, no Spanish anywhere.
 
+- **Generative self-interrogation (§2.12)**: for the things this response audited, did you first ask *"what is everything that could be checked about this?"* and run the questions the checklist didn't contain — not just the listed checks? If a finding came from an off-checklist question, the Analysis names the reasoning chain that produced it.
+- **Present-item depth (§2.13)**: the carrier lines already in scope this response were examined as hard as missing items were hunted — quantity, unit price, M/E/L, waste, grade, line code, implied companion work — with the missed-item hunt undiminished. Depth was added, nothing was traded off.
+- **Preconditions (§2.14)**: this skill verified its preconditions (active project; for a stage, prior stage `Complete`/`Skipped`; for setup, the idempotency confirm) before doing any work, and would refuse cleanly — and re-check from scratch next time — if they weren't met.
 - **Action log (§9.4)**: every tool call this response made has its one-line note.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.

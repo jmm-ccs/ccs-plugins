@@ -23,6 +23,19 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier in the conversation.
 
+## Step 0.4 — Already-set-up check (idempotency)
+
+Per §2.14 of the protocols. Before the pre-flight, before touching a single file, check whether this project was **already set up**: does `outputs/audit-progress.md` already exist with real audit state in it (stage rows, not just an empty shell)?
+
+- **If yes**, do not proceed silently. Use `AskUserQuestion` with exactly this question:
+
+  > "This project has already been set up. Are you sure you want to set it up again? This could erase some of your previous work."
+
+  Options: `No — leave it as is` (list first, the default) and `Yes — set it up again`. On **No** — or anything that isn't an explicit yes — stop without creating or overwriting anything. On **Yes**, continue to Step 0.5; the Step 2 sequence still preserves existing files wherever it says "if it doesn't already exist," so re-running is safe by default.
+- **If no**, this is a fresh project — continue to Step 0.5.
+
+Re-check on every invocation; never assume a prior run's answer.
+
 ## Step 0.5 — Pre-flight: essential claim documents (hard stop)
 
 Before asking for confirmation and before creating any file or artifact, scan the project folder. This is read-only — list every file recursively (same exclusions as the inventory's Step 1: skip `outputs/`, `.DS_Store` and other OS/tool detritus, and hidden files). Using the categorization heuristics from `../claim-project-inventory/SKILL.md` Step 2, answer two questions:

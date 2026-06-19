@@ -13,9 +13,14 @@ CCS builds the line-item estimate itself in Xactimate from the XLSX; the marked-
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else in this stage. Do this every time this skill is invoked. The Output Integrity rules (§1.1), Math Integrity (§1.4), Carrier Estimate Protocol (§2.3, including the suggestion-list spec and Sub-Item Numbering Conflicts), and the Final factual integrity and logic pass (§3) are all critical here.
 
-## Prerequisite
+## Prerequisite — enforced gate (refuse until met)
 
-The 13 audit stages have all been confirmed complete and the suggestion list at `outputs/audit-suggestion-list.md` (in the project folder) reflects the user-confirmed state. If any stage is incomplete or the suggestion list is stale, stop and route the user back to the appropriate stage skill or to `forensic-claim-audit` (the master orchestrator).
+Run this check before any finalizer work, per §2.14 of the protocols. Re-check on every attempt — never warn once and proceed.
+
+1. **Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, refuse and tell the user to run `/claim-audit-setup` first, then stop.
+2. **Sequence.** In `outputs/audit-progress.md`, Stage 13 (Sales Tax Audit) must be `Complete`. If any of the 13 stages is incomplete — or the suggestion list at `outputs/audit-suggestion-list.md` is stale — refuse, route the user back to the appropriate stage skill or to `/forensic-claim-audit` (the master orchestrator), and stop.
+
+Proceed only when both pass.
 
 ## Inputs you need
 

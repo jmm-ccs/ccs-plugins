@@ -19,6 +19,10 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier. The canonical expected-items list for the missing-flag check is this skill's own Step 4 table — no other file needs to be read for it.
 
+## Precondition (refuse until met)
+
+Per §2.14 of the protocols. This is the **pre-audit pre-flight**, so it deliberately does **not** require an active claim project — it is exactly what the user runs *before* `/claim-audit-setup` to see whether the workspace has what the audit needs. Its only precondition is the workspace itself: if it holds no files at all, say so plainly and stop (Step 1's file count surfaces this). Re-check on every attempt.
+
 ## Step 1 — Walk the workspace
 
 The project folder is the Cowork workspace, already attached. Use `bash` with `find` (or equivalent) to list every file in the workspace recursively. For each file, capture:

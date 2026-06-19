@@ -13,9 +13,14 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 **§1.5 reminder — every suggestion this stage raises needs its plain-language Why + Source.** In basic language: what's wrong or missing and why the fix is justified, plus the basis it rests on — a named project file, a verified citation, or an openly flagged judgment call. No Why or no Source means it isn't ready: don't propose it and don't record it (§1.5 completeness gate, §2.3).
 
-## Prerequisite
+## Prerequisite — enforced gate (refuse until met)
 
-Stages 1–12 confirmed complete.
+Run this check before any work in this stage, per §2.14 of the protocols. Re-check on every attempt — never warn once and proceed.
+
+1. **Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, this isn't an active claim project yet: refuse, tell the user to run `/claim-audit-setup` first, and stop.
+2. **Sequence.** In `outputs/audit-progress.md`, Stage 12 (Permits & Contractor Cost Audit) must be `Complete` or `Skipped`. If it isn't, refuse, point the user to `/claim-permits-contractor-cost-audit`, and stop.
+
+Proceed only when both pass.
 
 ## Step 1 — Verify the sales tax rate
 

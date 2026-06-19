@@ -15,6 +15,10 @@ This skill produces no audit findings, no suggestions, and no recommendations. I
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else. Do this every time this skill is invoked. Pay particular attention to §1.4 (every count and number reported to the user must have provenance — frame counts and durations come from the actual ffmpeg/Whisper run, never estimated) and §9 (how to talk to the user — outcomes, not process narration).
 
+## Precondition (refuse until met)
+
+Per §2.14 of the protocols. This is a **pre-audit input-prep utility**, so it does **not** require an active claim project — it deliberately runs before setup, to turn walkthrough videos into citable evidence the audit can use. Its one precondition is that there is something to process: at least one **unprocessed** video in the project folder. Step 1 enforces this — if there are no videos, or every video is already processed, say so plainly and stop. Re-check on every attempt.
+
 ## The every-frame rule
 
 Every frame of the video gets decoded and examined — no sampling, no fixed-interval skipping. What gets *saved* is every visually distinct frame: consecutive near-duplicate frames (the camera holding still on the same view) are dropped, because they add file count without adding evidence. Nothing visible in the video is lost; the audit just isn't handed thousands of copies of the same view. This is implemented with ffmpeg's `mpdecimate` filter, which decodes the full frame stream and emits only frames that differ materially from the one before.

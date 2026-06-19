@@ -15,6 +15,15 @@ For the final-delivery flow that runs the Sanity Audit and exports the XLSX, see
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else. Do this every time this skill is invoked. The Carrier Estimate Protocol (§2.3, including the suggestion-list spec, the labeling rules, and Sub-Item Numbering Conflicts) and Output Integrity (§1.1) are critical here — the marked-up copy uses the suggestion list's own wording and numbers and never adds content the suggestion list doesn't have.
 
+## Prerequisite — enforced gate (refuse until met)
+
+Run this check before producing the markup, per §2.14 of the protocols. Re-check on every attempt.
+
+1. **Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, refuse and tell the user to run `/claim-audit-setup` first, then stop.
+2. **Something to mark up.** `outputs/audit-suggestion-list.md` must exist and hold at least one suggestion row (more than the header). If it's missing or header-only, there's nothing to render onto the estimate yet — say so plainly and stop. (This utility can run mid-audit; it does **not** require all 13 stages complete — only that the suggestion list has entries.)
+
+Proceed only when both pass.
+
 ## Inputs
 
 - **The suggestion list** — `Read` `outputs/audit-suggestion-list.md` (in the project folder)
