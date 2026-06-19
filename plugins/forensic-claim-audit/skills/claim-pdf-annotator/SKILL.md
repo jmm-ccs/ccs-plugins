@@ -43,25 +43,37 @@ Everything the carrier wrote that no suggestion touches is reproduced black and 
 
 ## Method
 
-1. **Reproduce the carrier estimate as a copy.** Use the `pdf` skill to create the marked-up copy at `outputs/[carrier-pdf-name]-annotated.pdf`. The copy must contain the **full** estimate — every room, category, and line item the carrier wrote, in the carrier's order and numbering (§2.3). Never modify the original carrier file. Render the carrier's own content in black.
+The marked-up estimate is produced by a **bundled, deterministic script** — `scripts/build_annotated_estimate.py`. Do **not** hand-roll the PDF rendering: hand-built rendering is exactly what produced the anchor-misplacement and missing-character bugs this script exists to prevent. The script reproduces the carrier estimate faithfully (original never touched, carrier content black), anchors each suggestion to its carrier line by the **left-column item number** (so it never latches onto a dollar amount in the cost columns), draws the green box + green note, builds the justification appendix, and transliterates characters the PDF base fonts can't render (≈, —, →) so nothing prints as "?".
 
-2. **Walk the suggestion list.** For each entry:
-   - **Include every entry** in the suggestion list. The only dispositions are `Agreed`, `Halted`, and `Needs-info`; tag each edit with its disposition (in the justification box, below) so the snapshot shows the full current state. There is nothing to skip — rejected suggestions are never added to the list, so they aren't here.
+1. **Ensure the engine is present.** The script needs PyMuPDF. If `python3 -c "import fitz"` errors, install it: `pip install pymupdf --break-system-packages`.
 
-3. **Locate the carrier line the entry modifies** in the reproduced estimate using the entry's **Carrier line** field (item number + the title exactly as the PDF has them).
-   - For a **Correct** entry, find that line and render the changed field's new value in green in place.
-   - For an **Add** entry, insert the new line in green at the location the labeling rules dictate (§2.3) — directly below the parent carrier line for an ancillary item, at the end of the room/category for a `Supp-New` line, at the end of the estimate for a whole new room/category.
-   - For a **Flag** entry, render the flag's note in the justification box at the carrier line it concerns (no value change unless the entry specifies one).
-   - If the carrier line cannot be found (and the entry isn't a brand-new room/category that legitimately has no parent), do not invent a location — flag the entry to the user as "could not locate on the estimate" and skip it.
+2. **Locate the script** (bundled next to this skill at `scripts/build_annotated_estimate.py`):
 
-4. **Apply the edit and place its justification box.** For each entry:
-   - Render the changed value(s) or the new line in **green** (per "What the deliverable looks like" above). For a Correct entry, change only the field the suggestion actually touches (§1.1); leave the rest of that line black.
-   - Directly beneath the changed value / new line, place the justification box: the **[x] changed from [old] to [new] for [reason]** line (values copied verbatim per §1.4; reason = the plain-language Why + Source from `Supporting evidence`, copied verbatim per §1.5), plus the entry's **disposition**, **suggestion type**, and **label**.
-   - Copy numbers and prose **byte-for-byte** from the suggestion list — this skill renders the suggestion list onto the estimate; it recomputes nothing and rewords nothing (§1.1, §1.4).
+   ```bash
+   SCRIPT="${CLAUDE_PLUGIN_ROOT}/skills/claim-pdf-annotator/scripts/build_annotated_estimate.py"
+   [ -f "$SCRIPT" ] || SCRIPT="$(find / -path '*claim-pdf-annotator/scripts/build_annotated_estimate.py' 2>/dev/null | head -1)"
+   ```
 
-5. **Save** the marked-up estimate as `outputs/[carrier-pdf-name]-annotated.pdf`. Report to the user how many edits were applied and how many entries (if any) could not be located.
+3. **Run it** with three arguments — the carrier estimate PDF (in the project folder), the suggestion list, and the output path:
 
-**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, also produce a Spanish marked-up copy `outputs/[carrier-pdf-name]-annotated-ES.pdf`: reproduce the carrier estimate again and apply the same green edits at the same lines, but take the justification-box wording (the reason text and any descriptive prose) from the Spanish suggestion list `outputs/audit-suggestion-list-es.md` (descriptive text and Supporting-evidence prose in Spanish; carrier line targets, the changed values, numbers, and codes identical). Produce it **alongside** the English marked-up copy, never instead of it.
+   ```bash
+   python3 "$SCRIPT" "<carrier estimate PDF>" "outputs/audit-suggestion-list.md" "outputs/<carrier-pdf-name>-annotated.pdf"
+   ```
+
+   How the script renders each entry (per "What the deliverable looks like" above, §2.3):
+   - An entry that names a **carrier item** ("Item NNN") → a green box around that carrier line and a green note beneath it (`> CCS #N [type/label/disposition]: <proposed change>`).
+   - An entry with **no parent carrier line** — a `Supp-New` room/grounds space or a whole-estimate flag — → carried in the justification appendix (it has no line to sit on).
+   - **Every** entry → a full green box in the **justification appendix** at the end, grouped by carrier page, carrying Carrier line, Change (the `Proposed change`), Provenance, and Why/Source — plus disposition, type, and label. Numbers and prose are copied **byte-for-byte** from the suggestion list (§1.1, §1.4 — the script recomputes and rewords nothing).
+
+4. **Read the script's report and relay it.** It prints the saved path (a versioned name if the project folder blocked overwriting a prior file — use whatever it prints), the count of suggestions anchored to a carrier line, and any that landed **appendix-only**. If an entry that *should* sit on a carrier line couldn't be located, surface it to the user with its number, one-line summary, and the Carrier line it was trying to anchor against, so they can point you at the right line and re-run.
+
+**Bilingual mode (§2.11).** If `**Languages:**` in `outputs/audit-progress.md` is `English + Spanish`, run the script a **second time** with the Spanish suggestion list and a `-ES` output name:
+
+```bash
+python3 "$SCRIPT" "<carrier estimate PDF>" "outputs/audit-suggestion-list-es.md" "outputs/<carrier-pdf-name>-annotated-ES.pdf"
+```
+
+This produces the Spanish marked-up copy **alongside** the English one — carrier line targets, changed values, numbers, and codes identical (they come from the same carrier estimate); only the note and justification prose differ, since the script reads them from the Spanish list. Never produce the Spanish copy instead of the English one.
 
 ## Integrity checks before delivery
 

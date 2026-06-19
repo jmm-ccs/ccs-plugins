@@ -612,6 +612,29 @@ Then **stop**. Do not begin the next stage in this chat.
 
 For Stage 13 specifically: the next step is Final Delivery (the `claim-audit-finalizer` skill). Single-session: prompt *"Ready for Output Process."* and chain. Multi-session: same content requirements, substituting "Final Delivery" and `/claim-audit-finalizer`.
 
+### Canonical stage order — the single source of truth for routing
+
+The pipeline runs in exactly this order. Do not route from memory: find the current stage in this list and the next stage is the entry **immediately below** it.
+
+| # | Stage | Command |
+|---|---|---|
+| 1 | Scope Audit | `/claim-scope-audit` |
+| 2 | Line Item Audit | `/claim-line-item-audit` |
+| 3 | Line Item Completeness Audit | `/claim-line-item-completeness-audit` |
+| 4 | Related Items Audit | `/claim-related-items-audit` |
+| 5 | Type-of-Loss Audit | `/claim-type-of-loss-audit` |
+| 6 | Appurtenances Audit | `/claim-appurtenances-audit` |
+| 7 | Code, Ordinance, and Law Audit | `/claim-code-ordinance-law-audit` |
+| 8 | Continuity / Room-Myopia Audit | `/claim-continuity-audit` |
+| 9 | Storage, Debris, and Disposal Audit | `/claim-storage-debris-audit` |
+| 10 | Cleanup and Occupant Protection Audit | `/claim-cleanup-protection-audit` |
+| 11 | Trades Audit | `/claim-trades-audit` |
+| 12 | Permits and Contractor Cost Audit | `/claim-permits-contractor-cost-audit` |
+| 13 | Sales Tax Audit | `/claim-sales-tax-audit` |
+| → | Final Delivery | `/claim-audit-finalizer` |
+
+**Backward-routing guard.** At a stage-end gate the next stage's number must be exactly **current + 1** (Stage 13 routes to Final Delivery). Before you name the next stage, locate the current stage in the table and take the row directly beneath it. If the stage you are about to send the user to is the same as, or earlier than, the current stage, you have slipped — stop, re-read this table, and route to the correct next stage. **A stage-end gate never routes the user to an earlier stage.** (Unmet prerequisites are the one case that points backward, and they are handled at a stage's **start** — see its Prerequisite — never presented as the "next" step from a completed stage's end-gate.)
+
 This gate exists because the user is the one who can spot when a directive has slipped, when a room got skipped, or when a hypothesis went off-track. The mode-routing branch is layered on top — the gate question itself, and the requirement of explicit user confirmation, is identical in both modes.
 
 ---
@@ -623,6 +646,7 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Item-name match**: every line item you reference must match the carrier's PDF exactly (item number + title). If you say "Item 47: Custom Vanity Installation" and the PDF says "Item 47: Paneling," you have hallucinated. Use the `Read` tool on the carrier PDF to confirm the exact text before quoting it.
 - **Math integrity per §1.4**: every number in your response has provenance. Calculated numbers ran through `bash` and show what/why/math. Copied numbers show what/why/where. Any number that came from your head fails the check.
 - **No sequence gaps**: don't skip rooms or items. If the PDF has "Master Toilet," your audit must too.
+- **Next-stage routing (§4)**: at a stage-end gate, the stage you send the user to is the one immediately after the current stage in §4's canonical order (current + 1; Stage 13 → Final Delivery). Never route to the same or an earlier stage. If you're about to name an earlier stage as "next," you've slipped — re-read §4's table.
 - **No absurd unit costs**: if a single line's "difference" looks disproportionate to construction reality (e.g., $2,500 to add debris bags to a tear-out), you're goal-seeking. Stop and recheck.
 - **Subject match**: the subject of each supplement line item must match the subject of the carrier line item it corrects.
 - **Justification language**: justifications must be factual. No judgmental language. No "high-grade" specs in a low-grade home.
