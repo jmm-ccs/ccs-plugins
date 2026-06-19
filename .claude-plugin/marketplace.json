@@ -10,6 +10,11 @@
       "name": "forensic-claim-audit",
       "source": "./plugins/forensic-claim-audit",
       "description": "Forensic insurance claim auditing toolkit: 13 staged supplement-audit skills with shared factual-integrity protocols, plus finalizer, PDF annotator, inventory and export utilities."
+    },
+    {
+      "name": "ccs-pdf-viewer",
+      "source": "./plugins/ccs-pdf-viewer",
+      "description": "Interactive local PDF viewer connector: lists local PDFs and serves their bytes so an in-app viewer can render any estimate client-side, bypassing the built-in PDF panel."
     }
   ]
 }
