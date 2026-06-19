@@ -26,6 +26,14 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier in the conversation.
 
+## Prerequisite — enforced gate (refuse until met)
+
+Run this check before exporting, per §2.14 of the protocols. Re-check on every attempt.
+
+**Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, this isn't an active claim project: refuse and tell the user to run `/claim-audit-setup` first, then stop. (Once a project is active, Step 1 below handles the case where the suggestion list has no `Agreed` entries yet — that's a "nothing to export," not a precondition failure.)
+
+Proceed only when it passes.
+
 ## Step 1 — Locate and read the suggestion list
 
 The suggestion list lives in the project workspace at `outputs/audit-suggestion-list.md`. Use `Read` on it.

@@ -1,6 +1,6 @@
 ---
 name: forensic-claim-audit
-description: Run the full 13-stage CCS forensic insurance claim audit end-to-end on a property insurance estimate. Use for any prompt like "audit this claim," "build a supplement," "run the full forensic audit," "review the carrier estimate," or whenever the user uploads a carrier estimate plus project files. Walks scope → line items → type-of-loss → code/ordinance → trades → sales tax with verify-then-advance gates between every stage. Hands off to claim-audit-finalizer at the end, which runs the Sanity Audit, exports the suggestion list to XLSX, invokes claim-pdf-annotator for the annotated carrier PDF, and invokes claim-supplement-package for the supplement document.
+description: Run the full 13-stage CCS forensic insurance claim audit end-to-end on a property insurance estimate. Use for any prompt like "audit this claim," "build a supplement," "run the full forensic audit," "review the carrier estimate," or whenever the user uploads a carrier estimate plus project files. Walks scope → line items → type-of-loss → code/ordinance → trades → sales tax with verify-then-advance gates between every stage. Hands off to claim-audit-finalizer at the end, which runs the Sanity Audit, exports the suggestion list to XLSX, and invokes claim-pdf-annotator to produce the marked-up copy of the carrier's estimate (the audit's end deliverable).
 ---
 
 # Forensic Claim Audit — Master Orchestrator
@@ -54,6 +54,8 @@ This skill is the single-session entry point. Before doing anything else, check 
 
 ### Step 0.5.1 — Create the workspace files
 
+**Idempotency (§2.14).** If `outputs/audit-progress.md` already exists with real audit state, you're resuming an existing audit — preserve it. The per-item "if it doesn't already exist" / "leave it as-is" guards below ensure re-running never clobbers prior work; the only field this orchestrator deliberately rewrites is the `**Mode:**` line (to `single-session`), per Step 0.5.0.
+
 1. **Create the `outputs/` sub-folder** inside the workspace if it doesn't already exist. If the folder is not writable, use `AskUserQuestion` to ask the user where to put `outputs/` and create it there.
 
 2. **Initialize `outputs/audit-suggestion-list.md`** with the table headers from §2.3 if the file doesn't already exist (resuming a prior audit, leave it as-is).
@@ -74,7 +76,7 @@ This skill is the single-session entry point. Before doing anything else, check 
 
 8. **Confirm and move on.** One short sentence: setup is done, Stage 1 is starting. No re-explanation of what got set up. Then proceed to Stage 1.
 
-This same workspace-creation flow runs automatically when any individual stage skill is invoked standalone — every stage's Step 0 reads the protocols, and the protocols' §2.3 + §2.6 Initialization specs trigger the same setup (defaulting the Mode line to `multi-session`, per §2.7). Step 0.5 here just makes it explicit at the master-orchestrator level and adds the mode-check that's specific to invoking the orchestrator (which writes `single-session` after the user confirms). The explicit multi-session counterpart, `claim-audit-setup`, runs the same workspace-creation up front and writes `multi-session` deliberately, then stops without starting Stage 1.
+Workspace creation belongs to setup — this orchestrator (which runs setup inline) and `claim-audit-setup`. Individual stage skills **no longer** self-create the workspace: per §2.14 of the protocols, a stage invoked without an active project (no `outputs/audit-progress.md`) refuses and sends the user to `/claim-audit-setup` rather than initializing anything. Step 0.5 here is the orchestrator's inline setup, plus the mode-check specific to invoking the orchestrator (which writes `single-session` after the user confirms). The explicit multi-session counterpart, `claim-audit-setup`, runs the same workspace-creation up front and writes `multi-session` deliberately, then stops without starting Stage 1.
 
 ## How to walk the stages
 
@@ -112,7 +114,7 @@ If the user invokes HALT or pushes back on a finding, follow §6 of the protocol
 
 ## Step 14 — Output
 
-The Stage 13 gate (handled by the loop in "How to walk the stages" → §4 of the protocols → single-session branch) will have already issued the *"Ready for Output Process."* prompt. When the user replies "begin output process" (or equivalent), use `Read` on `../claim-audit-finalizer/SKILL.md` and execute it. The finalizer runs the Supplement Sanity Audit, flags items that might trigger insurance-fight or homeowner-negotiation friction (asks the user about each), exports the suggestion list to XLSX, invokes `claim-pdf-annotator` to produce the annotated carrier PDF, and invokes `claim-supplement-package` to produce the supplement document (cover letter + Alignment Summary + line-item alignments, per the project's Sample Supplement). All deliverables land in `outputs/` in the project folder. CCS builds the line-item supplement estimate in Xactimate from the XLSX; the package is the document that travels with it.
+The Stage 13 gate (handled by the loop in "How to walk the stages" → §4 of the protocols → single-session branch) will have already issued the *"Ready for Output Process."* prompt. When the user replies "begin output process" (or equivalent), use `Read` on `../claim-audit-finalizer/SKILL.md` and execute it. The finalizer runs the Supplement Sanity Audit, flags items that might trigger insurance-fight or homeowner-negotiation friction (asks the user about each), exports the suggestion list to XLSX, and invokes `claim-pdf-annotator` to produce the marked-up copy of the carrier's estimate — the full carrier estimate reproduced with CCS's edits applied in-line (changed values and new lines in green, a justification box under each change/addition). All deliverables land in `outputs/` in the project folder. CCS builds the line-item supplement estimate in Xactimate from the XLSX; the marked-up estimate is the carrier-facing document that travels with it.
 
 The PDF annotator is also available as a standalone skill the user can invoke any time during the audit to get a current snapshot of the suggestion list rendered onto the carrier PDF.
 
@@ -127,7 +129,7 @@ If a stage seems to require a tool that isn't available, stop and tell the user 
 
 ## When the user wants to skip stages
 
-Some claims don't need every stage. If the user wants to skip one (e.g., no appurtenances on a condo unit), confirm by reading back what they're skipping and why, then proceed to the next stage. Note the skip in the final supplement so the carrier sees the audit was deliberate, not incomplete.
+Some claims don't need every stage. If the user wants to skip one (e.g., no appurtenances on a condo unit), confirm by reading back what they're skipping and why, then proceed to the next stage. Note the skip in the marked-up estimate so the carrier sees the audit was deliberate, not incomplete.
 
 ## When responses start drifting
 

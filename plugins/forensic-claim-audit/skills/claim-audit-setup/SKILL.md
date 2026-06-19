@@ -11,6 +11,8 @@ Multi-session is the **default mode** for this plugin (see §2.7 of the protocol
 
 This skill is the multi-session counterpart to `forensic-claim-audit`. It writes `**Mode:** multi-session` into `outputs/audit-progress.md`; from that point on, every stage skill reads the mode at its end-of-stage gate (§4 of the protocols) and instructs the user to start the next stage in a fresh chat.
 
+Setup only proceeds if the essential claim documents are in the project folder (Step 0.5). An empty folder, or one holding only the standard samples/templates, stops the skill before any file is created.
+
 ## Step 0 — Read the protocols
 
 Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire file end-to-end before doing anything else. Pay particular attention to:
@@ -20,6 +22,42 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 - §2.7 — audit mode toggle (this is the section this skill operates against)
 
 Do this every time this skill is invoked, regardless of whether the protocols were loaded earlier in the conversation.
+
+## Step 0.4 — Already-set-up check (idempotency)
+
+Per §2.14 of the protocols. Before the pre-flight, before touching a single file, check whether this project was **already set up**: does `outputs/audit-progress.md` already exist with real audit state in it (stage rows, not just an empty shell)?
+
+- **If yes**, do not proceed silently. Use `AskUserQuestion` with exactly this question:
+
+  > "This project has already been set up. Are you sure you want to set it up again? This could erase some of your previous work."
+
+  Options: `No — leave it as is` (list first, the default) and `Yes — set it up again`. On **No** — or anything that isn't an explicit yes — stop without creating or overwriting anything. On **Yes**, continue to Step 0.5; the Step 2 sequence still preserves existing files wherever it says "if it doesn't already exist," so re-running is safe by default.
+- **If no**, this is a fresh project — continue to Step 0.5.
+
+Re-check on every invocation; never assume a prior run's answer.
+
+## Step 0.5 — Pre-flight: essential claim documents (hard stop)
+
+Before asking for confirmation and before creating any file or artifact, scan the project folder. This is read-only — list every file recursively (same exclusions as the inventory's Step 1: skip `outputs/`, `.DS_Store` and other OS/tool detritus, and hidden files). Using the categorization heuristics from `../claim-project-inventory/SKILL.md` Step 2, answer two questions:
+
+1. Is there a **carrier estimate** (Xactimate PDF/ESX/XCEIF export or equivalent)?
+2. Is there at least one piece of **project documentation** — photos, videos, sketches, or floor plans (video-derived frames in `video-intake/` count)?
+
+**HARD STOP** if any of the following is true:
+
+- The folder is empty (nothing besides `outputs/` and detritus).
+- The folder contains only standard samples/templates — Sample supplement, CCS forensic checklists, CCS marketing sheet — and no claim documents.
+- There is no carrier estimate.
+- There is no project documentation.
+
+On a hard stop:
+
+1. Do **not** create `outputs/`, the suggestion list, the progress file, or any artifact. Do not run the inventory. Do not ask the Step 1 confirmation question.
+2. Tell the user in a short message: setup stopped because essential claim documents are missing; then one bullet per missing essential, using the **What it is** descriptions from the inventory's Step 4 table (describe the thing concretely — never just a category label).
+3. Close with one line: add the documents to the project folder, then send `/claim-audit-setup` again.
+4. **Stop.** The skill ends here — no partial setup.
+
+Conditionally-required items (drying log for water losses, third-party measurement report for roofing/exterior claims) do **not** trigger the hard stop — the loss type isn't established at setup. The Step 4 inventory still flags them.
 
 ## Step 1 — Confirm intent
 
@@ -69,9 +107,9 @@ After the workspace is initialized and the mode is `multi-session`, run the inve
 
 1. Use `Read` on `../claim-project-inventory/SKILL.md` and read the entire file.
 2. Execute every step of `claim-project-inventory` end-to-end (its Steps 1 through 6). It will walk the workspace, write `outputs/project-inventory.md` and `outputs/project-inventory.xlsx`, flag any missing expected items by what-they-are (not by category label), and print its own closing summary in chat — including a descriptive bullet for each missing item per the inventory's Step 6 template.
-3. Do not collapse, summarize, or re-render the inventory's closing message. Let it speak for itself. Step 5 below is a separate hand-off message that does **not** repeat the missing-items list.
+3. Do not collapse, summarize, or re-render the inventory's closing message. Let it speak for itself. Step 6 below is a separate hand-off message that does **not** repeat the missing-items list.
 
-If the inventory skill fails or the workspace is empty, do **not** abort the setup. Note the failure to the user in the Step 5 hand-off message, and let them decide whether to fix the workspace before starting Stage 1.
+If the inventory skill fails, do **not** abort the setup — note the failure to the user in the Step 6 hand-off message and let them decide whether to fix it before starting Stage 1. (An empty or claim-document-less workspace can't reach this step; the Step 0.5 pre-flight already hard-stops on that.)
 
 ## Step 5 — Divide the property into macro-areas
 
@@ -81,7 +119,7 @@ Establish the macro-area map (§2.8 of the protocols) so every stage has its uni
 
 2. Show the proposed division and ask the user to confirm or adjust it. This is the user's call — they have the final say on how the property is divided.
 
-3. If no project docs are present yet (empty or near-empty workspace), don't invent a division — ask the user to name the macro-areas for this claim, or note that the map will be set during the Scope Audit and move on.
+3. The Step 0.5 pre-flight guarantees a carrier estimate and project documentation exist, so a division can normally be proposed. If the docs are still too thin to support one, don't invent a division — ask the user to name the macro-areas for this claim, or note that the map will be set during the Scope Audit and move on.
 
 4. Once confirmed, write `outputs/macro-areas.md` per the §2.8 structure, with the `**Last updated:**` stamp set to `at project setup`.
 
@@ -108,7 +146,7 @@ Then **stop**. Do not begin Stage 1 in this chat. Stage skills inside this plugi
 
 - Does not run any of the 13 audit stages.
 - Does not produce any audit findings, suggestions, or recommendations.
-- Does not require the carrier estimate or project documentation up front. The Step 4 inventory will simply flag missing categories so the user knows what's still needed before Stage 1.
+- Does not proceed without the essential claim documents. The Step 0.5 pre-flight hard-stops — before any file is created — if the folder is empty, holds only samples/templates, or lacks a carrier estimate or project documentation. Conditionally-required items (drying log, measurement report) don't hard-stop; the Step 4 inventory flags those.
 - Does not flip the mode back to `single-session`. That's the master orchestrator's job, and only after asking the user.
 
 ## Related skills

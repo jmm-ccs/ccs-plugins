@@ -1,6 +1,6 @@
 ---
 name: claim-audit-protocols
-description: The shared Factual Integrity, Process, and Output protocols for forensic insurance claim audits. Every audit skill in this plugin reads this file in full at the start of each stage. Trigger this skill when the user references CCS audit protocols, factual integrity rules, supplement format rules, the HALT phrase, the Carrier Estimate Protocol, sub-item numbering, hyperbolic-language self-check, or asks to "lock in the protocols."
+description: The shared Factual Integrity, Process, and Output protocols for forensic insurance claim audits. Every audit skill in this plugin reads this file in full at the start of each stage. Trigger this skill when the user references CCS audit protocols, factual integrity rules, output format rules, the HALT phrase, the Carrier Estimate Protocol, sub-item numbering, hyperbolic-language self-check, or asks to "lock in the protocols."
 ---
 
 # Claim Audit Protocols
@@ -94,7 +94,7 @@ This is **not optional**, and it is **not** satisfied by the math provenance in 
 
 **Where it is enforced — all three surfaces carry the same plain-language Why + source:**
 
-- **The suggestion list** — the Why and the named source live in the `Supporting evidence` field (§2.3), so they flow automatically into the XLSX export and the annotated carrier PDF that reviewers read.
+- **The suggestion list** — the Why and the named source live in the `Supporting evidence` field (§2.3), so they flow automatically into the XLSX export and into the justification boxes on the marked-up copy of the carrier's estimate that reviewers read.
 - **The per-suggestion prompt** — stated in plain language both in the chat note immediately before each per-suggestion `AskUserQuestion` *and inside the `AskUserQuestion` question text itself* (§2.3), so the user can review the basis and decide from the question alone without scrolling back.
 - **The 4-section analysis** — spelled out in the Analysis section of every substantive response (§3).
 
@@ -121,17 +121,18 @@ The audit does **not** produce a rewritten or alternative estimate. It produces 
 The deliverables that come out of an audit:
 
 1. **The suggestion list** (always, throughout the audit) — a markdown file CCS reviews and works from. Detailed below. The canonical record of every suggestion, regardless of disposition.
-2. **The annotated carrier PDF** — produced on demand by the `claim-pdf-annotator` skill. Callable at any point in the audit (mid-audit for a snapshot, or at final delivery). Duplicates the carrier PDF and attaches each suggestion-list suggestion as a PDF comment — tagged with its disposition — at the location of the carrier line item it modifies.
+2. **The marked-up copy of the carrier's estimate** (the end deliverable) — produced on demand by the `claim-pdf-annotator` skill. Callable at any point in the audit (mid-audit for a snapshot, or at final delivery). It reproduces the **full** carrier estimate — every room, category, and line item, in the carrier's order and numbering — and applies CCS's edits in place: changed values and new lines rendered in **green**, with a justification box directly beneath every change reading *"[x] changed from [old] to [new] for [reason]"* (the reason is the suggestion's plain-language Why + Source per §1.5). Each box also carries the entry's disposition, suggestion type, and label. This is not a changes-only list and not a separate addendum — it is the whole original estimate with the corrections made in-line, so the carrier sees every change in context on their own estimate.
 3. **The XLSX export of the suggestion list** — produced by the `claim-audit-finalizer` skill at final delivery (after the Sanity Audit and disposition decisions are locked in). Sortable and filterable for CCS to work from while building the supplement in Xactimate.
-4. **The supplement package** — produced by the `claim-supplement-package` skill at final delivery, from the `Agreed` entries only. A Word document following the project's Sample Supplement: a cover letter duplicating the sample verbatim (contractor/adjuster/policyholder info swapped), an Alignment Summary based on the sample, and one line-item alignment per `Agreed` entry in the sample's exact format. This is the carrier-facing document that travels with the Xactimate supplement.
 
-The finalizer also invokes the PDF annotator and the supplement package as part of its closing flow, so a final-delivery run produces the XLSX, a fresh annotated PDF, and the package together.
+The finalizer also invokes the estimate markup as part of its closing flow, so a final-delivery run produces the XLSX and a fresh marked-up estimate together.
 
-Xactimate's own internal note system is not writable from outside the application, which is why annotation lives on a duplicated PDF rather than inside the carrier's actual estimate file.
+(**Superseded:** earlier versions also produced a separate Word supplement document via `claim-supplement-package` — a cover letter, Alignment Summary, and line-item alignments per the project's Sample Supplement. The marked-up copy of the carrier's estimate now replaces that as the carrier-facing deliverable. That skill remains in the plugin for projects that specifically want the legacy document, but it is no longer part of the standard output flow and the finalizer no longer invokes it.)
+
+Xactimate's own internal note system is not writable from outside the application, which is why the marked-up estimate is rendered on a reproduced copy of the carrier PDF rather than inside the carrier's actual estimate file.
 
 #### The suggestion list — the audit's source of truth
 
-The suggestion list is the persistent artifact that accumulates across all 13 audit stages. `claim-pdf-annotator` reads it on demand to produce the annotated PDF; `claim-audit-finalizer` reads it at final delivery to produce the XLSX export and to invoke the annotator as part of closing the audit.
+The suggestion list is the persistent artifact that accumulates across all 13 audit stages. `claim-pdf-annotator` reads it on demand to produce the marked-up copy of the carrier's estimate; `claim-audit-finalizer` reads it at final delivery to produce the XLSX export and to invoke the markup as part of closing the audit.
 
 **Where it lives.** The project folder is the Cowork workspace — already attached at the start of any audit. Do not ask the user to identify it; just operate inside the workspace. Create an `outputs/` sub-folder inside the workspace if it doesn't exist. The suggestion list goes in that sub-folder as `audit-suggestion-list.md`. Other audit deliverables (the annotated PDF, the exported XLSX, the live-artifact HTML) also go in `outputs/`. This `outputs/` folder is project-specific (one per claim).
 
@@ -157,7 +158,7 @@ The suggestion list is the persistent artifact that accumulates across all 13 au
 | Claude notes | Free-form annotations Claude writes about the entry. Required whenever disposition is `Needs-info` — the note must specify exactly what information is missing and what would unblock the entry (e.g., "needs a moisture-meter reading on the north wall before this can be quantified," or "needs the contractor's invoice for the roof-decking discovery"). Also used for any other Claude-side context worth recording on the entry (e.g., "rate verified at FL DOR 2026 schedule, URL in verified-facts section"). |
 | Disposition | `Agreed` (default for any accepted suggestion, whether or not the user modified it before accepting), `Halted` (§6 invoked on this entry), or `Needs-info` (waiting on contractor input before final delivery — the Claude notes column must say what info is needed) |
 
-**Initialization (run once before any audit work, every conversation — whether the user is invoking the master orchestrator or a single stage skill standalone).**
+**Initialization (run by setup only — `claim-audit-setup`, or `forensic-claim-audit` running setup inline; see §2.14).** Setup is the one and only thing that initializes the workspace. A stage or utility that finds the workspace missing does **not** initialize it — it refuses per the §2.14 active-project gate and sends the user to `/claim-audit-setup`. The steps below are what setup runs.
 
 The project folder is the Cowork workspace, already attached. Do not ask the user to identify it; just operate inside the workspace.
 
@@ -240,14 +241,14 @@ The markdown is canonical. If the artifact and the markdown ever diverge, the ma
 
 - At the start of every stage, after `Read`ing the protocols and the stage skill, also `Read` the suggestion list, the macro-area map (`outputs/macro-areas.md`, see §2.8), and — if it exists — the photo map (`outputs/photo-map.md`, written at the end of Stage 1; maps each project photo to a confirmed room so photos are cited by room). All are part of working state — they must be in attention for the new stage.
 - For the Scope Creep / Audit-Myopia check (§2.4), `Read` the suggestion list to verify the new suggestion does not duplicate any prior entry.
-- The `claim-pdf-annotator` skill `Read`s the suggestion list whenever it is invoked (annotator places every suggestion-list entry on the PDF, tagged with its disposition, regardless of stage).
-- The `claim-audit-finalizer` skill `Read`s the suggestion list at final delivery to run the Sanity Audit, gather user dispositions, export to XLSX, and invoke the annotator.
+- The `claim-pdf-annotator` skill `Read`s the suggestion list whenever it is invoked (the markup applies every suggestion-list entry as an in-line edit on the reproduced estimate, each tagged with its disposition in the justification box, regardless of stage).
+- The `claim-audit-finalizer` skill `Read`s the suggestion list at final delivery to run the Sanity Audit, gather user dispositions, export to XLSX, and invoke the markup.
 
-(All suggestion-list entries — `Agreed`, `Halted`, and `Needs-info` — appear in the full XLSX export and on the annotated PDF, each tagged with its disposition. The `claim-suggestion-list-export` utility produces the `Agreed`-only working set when CCS wants just the supplement-bound lines. The user reviews any `Halted` or `Needs-info` entries during the Sanity Audit.)
+(All suggestion-list entries — `Agreed`, `Halted`, and `Needs-info` — appear in the full XLSX export and on the marked-up estimate, each tagged with its disposition. The `claim-suggestion-list-export` utility produces the `Agreed`-only working set when CCS wants just the supplement-bound lines. The user reviews any `Halted` or `Needs-info` entries during the Sanity Audit.)
 
 #### Labeling rules
 
-Whether the suggestion lives in the suggestion list or as a comment on the annotated PDF, the labeling rules below identify each suggestion relative to the carrier's existing nomenclature.
+Whether the suggestion lives in the suggestion list or as an in-line edit on the marked-up estimate, the labeling rules below identify each suggestion relative to the carrier's existing nomenclature. They also fix **where each green addition is placed** on the marked-up estimate.
 
 When a new item is proposed:
 
@@ -262,7 +263,7 @@ If the carrier's original estimate already uses an alphanumeric sub-item structu
 - Ancillary additions become `Supp-1a`, `Supp-1b`, `Supp-47a`, etc.
 - The same `Supp-New` label still applies for room-level and category-level additions.
 
-The principle is: anyone reading the suggestion list or the annotated PDF should be able to glance at any suggestion and tell that it is ours, not the carrier's, with zero ambiguity.
+The principle is: anyone reading the suggestion list or the marked-up estimate should be able to glance at any suggestion and tell that it is ours, not the carrier's, with zero ambiguity. (On the marked-up estimate the green rendering reinforces this — every CCS edit is green, the carrier's untouched content stays black.)
 
 ### 2.4 Scope Creep / Audit-Myopia Check
 
@@ -282,7 +283,7 @@ The audit has a separate live progress artifact (Cowork id `claim-audit-progress
 
 The state file is `outputs/audit-progress.md`. The markdown is canonical; the artifact is convenience. If they ever diverge, the markdown is correct.
 
-**Initialization (run alongside the §2.3 suggestion-list initialization).**
+**Initialization (run by setup, alongside the §2.3 suggestion-list initialization — see §2.14; stages and utilities gate on this file rather than create it).**
 
 If `outputs/audit-progress.md` doesn't exist, create it with the structure below — a `**Mode:**` line on top (the audit-mode toggle, see §2.7) followed by one heading per stage (Stages 1–13 + Final Delivery), each with status `Not started`. The default mode is `multi-session` (each stage runs in its own chat in the same Cowork project); the master orchestrator (`forensic-claim-audit`) writes `single-session` instead when invoked end-to-end.
 
@@ -344,7 +345,7 @@ If this project's live progress artifact doesn't exist — the check is the back
 - A short parenthetical context note after a status is fine (e.g., "Skipped — condo, no appurtenances"). Do **not** put clock timestamps anywhere.
 - After **every** status change (stage heading or area sub-point), refresh the artifact: rebuild the HTML from the template (with the new state embedded as JSON), then call `mcp__cowork__update_artifact` with this project's progress artifact id (per-project rule, §2.3) and the refreshed file path.
 
-The progress tracking applies whether the audit is run via the master orchestrator or via individual stage skills standalone — every stage skill reads these protocols and is responsible for updating progress when invoked.
+The progress tracking applies whether the audit is run via the master orchestrator or via individual stage skills in their own chats — every stage skill reads these protocols and updates progress when it runs (after the §2.14 active-project gate confirms setup has run).
 
 ### 2.7 Audit mode toggle (single-session vs. multi-session)
 
@@ -426,7 +427,7 @@ The `**Last updated:**` line is a stage/step context stamp, never a clock time �
 - **Updated** by the Scope Audit (Stage 1). Once the true scope is confirmed, Stage 1 reconciles `outputs/macro-areas.md`: assign any newly-found rooms to the right macro-area, add a new macro-area if a whole new section surfaced (e.g., a crawlspace nobody scoped), and update the `**Last updated:**` stamp to `after Stage 1 (Scope) confirmation`.
 - **Read** at the start of every stage (alongside the protocols, the stage skill, and the suggestion list).
 
-**If the map is missing when a stage starts.** A stage skill can be invoked standalone in a fresh project that never ran setup. If `outputs/macro-areas.md` doesn't exist when a stage begins, establish it first — propose a division from the docs + estimate, confirm with the user — before doing the stage's area-by-area walk. Do not run a stage without a confirmed macro-area map.
+**If the map is missing when a stage starts.** Setup creates the macro-area map, and the §2.14 active-project gate ensures setup has run — so normally the map already exists when a stage begins. If `outputs/audit-progress.md` exists but `outputs/macro-areas.md` does not, setup did not finish: stop and route the user to re-run `/claim-audit-setup`, rather than building the map mid-stage. Do not run a stage without a confirmed macro-area map.
 
 **The per-macro-area gate.** Each stage walks the macro-areas in the order the map lists them. When a stage finishes a macro-area, ask a short procedural gate before moving to the next one (per §3 / §4 — short and direct, not 4-section):
 
@@ -522,7 +523,7 @@ If the file is missing, the line is missing, or the value is anything other than
 
 - **English stays English, untouched.** The canonical suggestion list (`outputs/audit-suggestion-list.md`), the live on-screen suggestion-list artifact, your chat responses, and every other process surface remain English only. Never inject Spanish into them.
 - **Maintain a parallel Spanish suggestion list.** Keep a duplicate file `outputs/audit-suggestion-list-es.md` that mirrors the English list row-for-row: identical header, identical `#`, identical row order, and every number, code, carrier-line reference, `Suggestion type`, `Label`, and `Disposition` **byte-for-byte identical** — only the descriptive fields (Proposed change, Supporting evidence, Claude notes) are rendered in Spanish. Whenever you append, modify, or re-disposition a row in the English list, make the identical change to the matching row in the Spanish duplicate so the two never drift. Initialize it (header row only) the first time a row is written under bilingual mode; if it is missing when you need it, build it from the current English list.
-- **Spanish duplicates of the deliverables.** Any skill that produces a suggestion-list deliverable produces a parallel Spanish copy from the Spanish list when bilingual is on — **alongside, never replacing** the English one. The XLSX exports get an `-es` sibling (e.g., `audit-suggestion-list-agreed-es.xlsx`, `audit-suggestion-list-es.xlsx`); the PDF annotator produces a Spanish-annotated copy (e.g., the annotated PDF's name with an `-ES` suffix); the supplement package gets `supplement-package-es.docx` (per that skill's own bilingual rules). The English deliverable is unchanged.
+- **Spanish duplicates of the deliverables.** Any skill that produces a suggestion-list deliverable produces a parallel Spanish copy from the Spanish list when bilingual is on — **alongside, never replacing** the English one. The XLSX exports get an `-es` sibling (e.g., `audit-suggestion-list-agreed-es.xlsx`, `audit-suggestion-list-es.xlsx`); the PDF annotator produces a Spanish copy of the marked-up estimate (the annotated PDF's name with an `-ES` suffix). The English deliverable is unchanged.
 - **Per-suggestion prompts show Spanish only (§2.3).** When bilingual is on, the `AskUserQuestion` question text — the summary line and its `Why:`/`Source:` lines — is shown in **Spanish only**, with no English in the popup. The four options (Accept / Reject / Modify / Ask a question) stay in English (fixed controls). The English wording of that same suggestion stays in your **chat response** as normal, so the English is always visible there — the popup is simply the Spanish.
 
 **Never translated — keep verbatim in both languages.** The carrier line number and title (quoted from the carrier PDF), all figures (quantities, units, unit prices, M/E/L, percentages), code citations and standard numbers (IICRC S500, etc.), file paths, the `#`, the `Suggestion type` token (Add/Correct/Flag), the `Label` code, and the `Disposition` value. Translate only the explanatory prose around them, and preserve every number and citation exactly — a mistranslated quantity is a factual-integrity failure (§1).
@@ -530,6 +531,63 @@ If the file is missing, the line is missing, or the value is anything other than
 **Translation standard.** Clear, professional, neutral Spanish suitable for an insurance/construction audit (understandable across Latin American and US-Hispanic audiences). If a construction term has no clean Spanish equivalent, give the Spanish then the English in parentheses, e.g. `tablaroca (drywall)`.
 
 This applies to **all 13 stages and every skill** for the rest of the project, because every skill reads these protocols and the `**Languages:**` line each session. It is not a per-response choice — it is on until turned off.
+
+### 2.12 Generative self-interrogation — never cap at a checklist
+
+Every checklist in this plugin (the frequently-missed categories, the companion-items-by-trade table, the peril references, the appurtenance list, the common-trades and common-permits lists, etc.) is a **floor, not a ceiling.** Each one guarantees the obvious things get checked. None of them is the full set of what *could* be checked about the thing in front of you. Treating a checklist as the complete list is the single biggest way this audit leaves money on the table.
+
+**The rule.** For every single thing the audit touches — every file, every room, every line item, every material, every photo and every object visible in it, every quantity, every assembly — *before* you measure it against any list, first ask the generative question:
+
+> *"What is everything that could be checked about this?"*
+
+Generate that question set yourself, from the thing in front of you, then run it. The starter checklist is **one input** to that set, never a replacement for it. You are responsible for the questions the checklist's author never thought to write down.
+
+**Work a thousand steps back.** The failure mode is auditing at the level of *"is this line priced right?"* when the decisive questions live several inferential steps upstream. Force the chain out:
+
+- What *is* this thing, specifically? (make, model, material, grade, age, rating, code class, what it connects to)
+- What does that specific identity *imply* — about its installation, its compatibility with what it touches, its legality today, whether it can be replaced like-for-like, the standards it must now meet?
+- What does each implication, in turn, imply? Keep going until the chain stops producing new, checkable questions.
+- *Only then:* does the carrier's treatment of this thing satisfy every question the chain produced?
+
+*Illustration only — do not hardcode these as "the checks":* an air handler tagged R-22 → R-22 is a phased-out refrigerant → it can't be recharged or reinstalled like-for-like → its matched condenser must therefore be replaced too, even if undamaged → and the replacement system must meet *current* efficiency and code. Proper self-interrogation surfaces that entire chain from the single fact "R-22," unprompted. The value is not the R-22 answer — it is the *habit* that produced it. Run that habit on everything the audit touches.
+
+**It is fine to keep and grow the starter checklists** in these skills — they make the obvious checks reliable. What is never acceptable is letting the checklist *cap* the inquiry. Run the list **and** the questions the list didn't contain.
+
+**Where it shows up.** When a suggestion came from a question no checklist contained, say so in the §3 Analysis — name the chain of reasoning that produced it. That is the visible evidence the self-interrogation actually ran, and it is exactly the kind of finding CCS is paying for.
+
+### 2.13 Examine what's already in the claim as deeply as what's missing
+
+Every stage already hunts for what the carrier *missed* — omitted rooms, absent line items, dropped companion items, un-scoped code upgrades. **Keep that hunt at full strength. Nothing in this section reduces it.**
+
+**Added on top of it:** apply the same forensic depth — the full §2.12 self-interrogation — to every line item the carrier *did* include. An item being present on the estimate is not evidence that it is correct. For each existing line, go past *"is it here?"* to the whole set of questions §2.12 generates about it: is the quantity right for the real measured scope, is the unit price current for this jurisdiction, are Material / Equipment / Labor each present where they belong, is the waste factor appropriate, is the grade matched to the actual finish, is it even the right line code for what the work truly is, does its presence imply companion or downstream work that isn't here? A present-but-wrong line is as much a finding as a missing one, and it is found only by examining what's already there as hard as you look for what's not.
+
+**This is depth, not priority.** Do not rank present-item scrutiny ahead of missing-item detection, and do not trade one off against the other — they run at full strength at the same time. The reason this is written as *added depth* and never as *"prioritize"*: telling the audit to prioritize one thing quietly slackens everything else, and the missed-item hunt must never slacken. Both are the job, fully, simultaneously.
+
+### 2.14 Preconditions & sequencing — refuse until valid, every time
+
+A skill in this plugin runs **only** when it is actually valid to run it. Before doing any of its own work, every skill checks its own preconditions and, if they are not met, **refuses and stops** — with a plain-language instruction for exactly what to do first. It does not warn once and proceed. It does not remember that it warned: the check is re-run from scratch on every invocation, and the skill keeps refusing **every time** until the preconditions are genuinely met.
+
+This is enforcement, not advice. *"The user clearly wants to keep going"* is not a reason to proceed past an unmet precondition — the point of this section is that the process **cannot be run any way other than as intended.**
+
+**The precondition kinds.** Each skill names which apply to it (in its own Prerequisite section); this section defines the mechanism.
+
+1. **Active-project gate.** Audit work happens only inside an **active claim project.** A folder being attached or mounted is **not** sufficient on its own — an active project is one whose audit workspace has been initialized. The concrete signal is: **`outputs/audit-progress.md` exists** in the workspace. If it does not exist, there is no active project — refuse, and tell the user to run `/claim-audit-setup` first (one plain line). Re-check on every attempt.
+
+   Initializing that workspace is the job of **setup only** — `claim-audit-setup`, or `forensic-claim-audit`, which runs the same setup inline. **No stage and no utility lazily creates the workspace.** If it's missing, they refuse and send the user to setup. This supersedes any older "create it if it doesn't exist" phrasing elsewhere in these protocols: the create path belongs to setup; everyone else gates on it.
+
+2. **Sequencing gate.** Each audit stage is valid only when the stage before it is done. Before working, a stage reads `outputs/audit-progress.md` and confirms its **immediately-prior stage is `Complete` or `Skipped`.** If it isn't, refuse and point the user at the correct earlier command. Stage 1 (Scope) has no prior stage — its sequencing precondition is simply that setup has run (the active-project gate above). That is exactly why the Scope Audit refuses until setup has been run and keeps refusing until it has. Re-check on every attempt.
+
+   Utilities that depend on audit state carry their own version of this (e.g., the estimate markup and the XLSX export refuse if the suggestion list has no accepted entries yet; the finalizer refuses until Stage 13 is `Complete`). Each utility's Prerequisite names its specific gate.
+
+3. **Idempotency gate (setup).** Setup must not silently clobber an audit that already exists. Before initializing anything, setup checks whether the project was already set up — the same signal: does `outputs/audit-progress.md` already exist with real audit state in it? If so, setup does **not** proceed. It confirms first, via `AskUserQuestion`, with this question:
+
+   > "This project has already been set up. Are you sure you want to set it up again? This could erase some of your previous work."
+
+   Only an explicit yes re-runs setup. Anything else stops without touching a file.
+
+**Generalize the pattern.** Every stage and every utility gets a precondition check of this shape at its start, **immediately after it reads the protocols** — find the analogue of the out-of-project problem for that specific skill and guard it. A skill with no meaningful precondition beyond "a project exists" still runs the active-project gate. The default posture is: verify first, refuse clearly if not valid, only then do the work.
+
+**How to refuse.** A refusal is short, plain (§9 voice), and actionable: one line on why it can't run yet, one line on the exact command to run first. No 4-section analysis, no apology, no audit work of any kind. Then stop, and re-evaluate from scratch the next time the skill is invoked.
 
 ---
 
@@ -611,6 +669,29 @@ Then **stop**. Do not begin the next stage in this chat.
 
 For Stage 13 specifically: the next step is Final Delivery (the `claim-audit-finalizer` skill). Single-session: prompt *"Ready for Output Process."* and chain. Multi-session: same content requirements, substituting "Final Delivery" and `/claim-audit-finalizer`.
 
+### Canonical stage order — the single source of truth for routing
+
+The pipeline runs in exactly this order. Do not route from memory: find the current stage in this list and the next stage is the entry **immediately below** it.
+
+| # | Stage | Command |
+|---|---|---|
+| 1 | Scope Audit | `/claim-scope-audit` |
+| 2 | Line Item Audit | `/claim-line-item-audit` |
+| 3 | Line Item Completeness Audit | `/claim-line-item-completeness-audit` |
+| 4 | Related Items Audit | `/claim-related-items-audit` |
+| 5 | Type-of-Loss Audit | `/claim-type-of-loss-audit` |
+| 6 | Appurtenances Audit | `/claim-appurtenances-audit` |
+| 7 | Code, Ordinance, and Law Audit | `/claim-code-ordinance-law-audit` |
+| 8 | Continuity / Room-Myopia Audit | `/claim-continuity-audit` |
+| 9 | Storage, Debris, and Disposal Audit | `/claim-storage-debris-audit` |
+| 10 | Cleanup and Occupant Protection Audit | `/claim-cleanup-protection-audit` |
+| 11 | Trades Audit | `/claim-trades-audit` |
+| 12 | Permits and Contractor Cost Audit | `/claim-permits-contractor-cost-audit` |
+| 13 | Sales Tax Audit | `/claim-sales-tax-audit` |
+| → | Final Delivery | `/claim-audit-finalizer` |
+
+**Backward-routing guard.** At a stage-end gate the next stage's number must be exactly **current + 1** (Stage 13 routes to Final Delivery). Before you name the next stage, locate the current stage in the table and take the row directly beneath it. If the stage you are about to send the user to is the same as, or earlier than, the current stage, you have slipped — stop, re-read this table, and route to the correct next stage. **A stage-end gate never routes the user to an earlier stage.** (Unmet prerequisites are the one case that points backward, and they are handled at a stage's **start** — see its Prerequisite — never presented as the "next" step from a completed stage's end-gate.)
+
 This gate exists because the user is the one who can spot when a directive has slipped, when a room got skipped, or when a hypothesis went off-track. The mode-routing branch is layered on top — the gate question itself, and the requirement of explicit user confirmation, is identical in both modes.
 
 ---
@@ -622,6 +703,7 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Item-name match**: every line item you reference must match the carrier's PDF exactly (item number + title). If you say "Item 47: Custom Vanity Installation" and the PDF says "Item 47: Paneling," you have hallucinated. Use the `Read` tool on the carrier PDF to confirm the exact text before quoting it.
 - **Math integrity per §1.4**: every number in your response has provenance. Calculated numbers ran through `bash` and show what/why/math. Copied numbers show what/why/where. Any number that came from your head fails the check.
 - **No sequence gaps**: don't skip rooms or items. If the PDF has "Master Toilet," your audit must too.
+- **Next-stage routing (§4)**: at a stage-end gate, the stage you send the user to is the one immediately after the current stage in §4's canonical order (current + 1; Stage 13 → Final Delivery). Never route to the same or an earlier stage. If you're about to name an earlier stage as "next," you've slipped — re-read §4's table.
 - **No absurd unit costs**: if a single line's "difference" looks disproportionate to construction reality (e.g., $2,500 to add debris bags to a tear-out), you're goal-seeking. Stop and recheck.
 - **Subject match**: the subject of each supplement line item must match the subject of the carrier line item it corrects.
 - **Justification language**: justifications must be factual. No judgmental language. No "high-grade" specs in a low-grade home.
@@ -631,6 +713,9 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
 - **Bilingual handling (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm (a) you did **not** inject Spanish into the English suggestion list, the artifact, or your other English surfaces; (b) every row you added or changed was mirrored into the Spanish duplicate `outputs/audit-suggestion-list-es.md`, with all numbers, codes, and carrier-line references identical to the English row; and (c) each approval prompt was shown in **Spanish only**. If `English`, no Spanish anywhere.
 
+- **Generative self-interrogation (§2.12)**: for the things this response audited, did you first ask *"what is everything that could be checked about this?"* and run the questions the checklist didn't contain — not just the listed checks? If a finding came from an off-checklist question, the Analysis names the reasoning chain that produced it.
+- **Present-item depth (§2.13)**: the carrier lines already in scope this response were examined as hard as missing items were hunted — quantity, unit price, M/E/L, waste, grade, line code, implied companion work — with the missed-item hunt undiminished. Depth was added, nothing was traded off.
+- **Preconditions (§2.14)**: this skill verified its preconditions (active project; for a stage, prior stage `Complete`/`Skipped`; for setup, the idempotency confirm) before doing any work, and would refuse cleanly — and re-check from scratch next time — if they weren't met.
 - **Action log (§9.4)**: every tool call this response made has its one-line note.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.
@@ -669,9 +754,8 @@ Several protocol directives translate to specific tools. Use them rather than na
 | "Look at the photos" / "check the project documentation" | `Read` (on image files in the user's project folder) |
 | Read a walkthrough video | `Read` on its extracted frames and transcript in `video-intake/<video name>/` — never the raw video file. If that folder doesn't exist, the video hasn't been processed: run `claim-video-intake` (which uses `bash` with ffmpeg + Whisper) first |
 | Append to / update the suggestion list | `Read` then `Write` (or `Edit`) on `outputs/audit-suggestion-list.md` |
-| Annotate the carrier PDF with comments (any time, on demand or at final delivery) | `pdf` skill (used by `claim-pdf-annotator`) |
+| Produce the marked-up copy of the carrier's estimate — reproduce it in full and apply the in-line green edits + justification boxes (any time, on demand or at final delivery) | `pdf` skill (used by `claim-pdf-annotator`) |
 | Export the suggestion list to spreadsheet at final delivery | `xlsx` skill (used by `claim-audit-finalizer`) |
-| Generate the supplement package document at final delivery | `docx` skill (used by `claim-supplement-package`, following the project's Sample Supplement) |
 | Ask the user to choose between options when the path forward isn't unambiguous | `AskUserQuestion` |
 
 If a directive seems to require a tool that isn't available in the current environment, flag the gap to the user — do not improvise.

@@ -13,9 +13,14 @@ Use the `Read` tool on `../claim-audit-protocols/SKILL.md` and read the entire f
 
 **§1.5 reminder — every suggestion this stage raises needs its plain-language Why + Source.** In basic language: what's wrong or missing and why the fix is justified, plus the basis it rests on — a named project file, a verified citation, or an openly flagged judgment call. No Why or no Source means it isn't ready: don't propose it and don't record it (§1.5 completeness gate, §2.3).
 
-## Prerequisite
+## Prerequisite — enforced gate (refuse until met)
 
-Stages 1–12 confirmed complete.
+Run this check before any work in this stage, per §2.14 of the protocols. Re-check on every attempt — never warn once and proceed.
+
+1. **Active project.** `outputs/audit-progress.md` must exist (setup has run). If it doesn't, this isn't an active claim project yet: refuse, tell the user to run `/claim-audit-setup` first, and stop.
+2. **Sequence.** In `outputs/audit-progress.md`, Stage 12 (Permits & Contractor Cost Audit) must be `Complete` or `Skipped`. If it isn't, refuse, point the user to `/claim-permits-contractor-cost-audit`, and stop.
+
+Proceed only when both pass.
 
 ## Step 1 — Verify the sales tax rate
 
@@ -109,8 +114,8 @@ For every sales-tax suggestion this stage produces (per-line-item tax additions,
 
 > "Do you believe the Sales Tax Audit is complete? If not, please direct me to the incomplete item(s)."
 
-After the user confirms, route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next step is **Final Delivery** (skill: `claim-audit-finalizer`) — Stage 13 is the last audit stage, and Final Delivery runs the Sanity Audit, exports the suggestion list to XLSX, produces the annotated carrier PDF, and generates the supplement package document.
+After the user confirms, route per §4 of the protocols (which honors the audit mode in `outputs/audit-progress.md`). The next step is **Final Delivery** (skill: `claim-audit-finalizer`) — Stage 13 is the last audit stage, and Final Delivery runs the Sanity Audit, exports the suggestion list to XLSX, and invokes `claim-pdf-annotator` to produce the marked-up copy of the carrier's estimate (the audit's end deliverable).
 
 In single-session mode, §4 prompts *"Ready for Output Process."* and waits for "begin output process" (or equivalent) before chaining into `claim-audit-finalizer`. In multi-session mode, §4 prints the multi-session hand-off (substituting "Final Delivery" / `claim-audit-finalizer` for the next-stage values) and stops here — the user begins Final Delivery in a fresh chat in this same Cowork project.
 
-This is the last audit stage. The next skill to invoke is `claim-audit-finalizer`. (`claim-supplement-generator` is deprecated — see its SKILL.md for details.)
+This is the last audit stage. The next skill to invoke is `claim-audit-finalizer`.

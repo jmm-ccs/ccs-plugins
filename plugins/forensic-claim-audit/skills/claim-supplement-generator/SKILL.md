@@ -1,16 +1,16 @@
 ---
 name: claim-supplement-generator
-description: DEPRECATED. This skill has been replaced by claim-audit-finalizer (final-delivery flow — Sanity Audit, XLSX export, invokes the annotator and the supplement package) and claim-supplement-package (the document deliverable — cover letter, Alignment Summary, and line-item alignments per the project's Sample Supplement). Do not invoke this skill. Invoke claim-audit-finalizer for end-of-audit closing, claim-supplement-package for the supplement document, or claim-pdf-annotator for a fresh annotated PDF.
+description: DEPRECATED. This skill has been replaced by claim-audit-finalizer (final-delivery flow — Sanity Audit, XLSX export, invokes the estimate markup) and claim-pdf-annotator (the audit's end deliverable — a marked-up copy of the carrier's estimate with CCS's edits applied in-line). Do not invoke this skill. Invoke claim-audit-finalizer for end-of-audit closing, or claim-pdf-annotator for a fresh marked-up estimate.
 ---
 
 # DEPRECATED — claim-supplement-generator
 
-This skill is no longer in use. Its job was split across the final-delivery skills; the document deliverable it used to produce now lives in `claim-supplement-package`, rebuilt on the suggestion-list architecture.
+This skill is no longer in use. Its job was split across the final-delivery skills, and the audit's deliverable has since become a marked-up copy of the carrier's estimate.
 
 **Replacements:**
 
-- [`claim-audit-finalizer`](../claim-audit-finalizer/SKILL.md) — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers user dispositions on flagged entries, exports the suggestion list to XLSX, invokes `claim-pdf-annotator` and `claim-supplement-package`, then runs a final fact-check across all the deliverables.
-- [`claim-supplement-package`](../claim-supplement-package/SKILL.md) — the supplement document: cover letter (verbatim from the project's Sample Supplement, info swapped), Alignment Summary, and line-item alignments in the sample's format, built from the `Agreed` suggestion-list entries.
-- [`claim-pdf-annotator`](../claim-pdf-annotator/SKILL.md) — on-demand utility. Reads the suggestion list and the carrier PDF, produces an annotated copy of the PDF with each suggestion-list suggestion attached as a PDF comment. Callable any time during or after the audit to get a current snapshot.
+- [`claim-audit-finalizer`](../claim-audit-finalizer/SKILL.md) — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers user dispositions on flagged entries, exports the suggestion list to XLSX, invokes `claim-pdf-annotator` to produce the marked-up estimate, then runs a final fact-check across the deliverables.
+- [`claim-pdf-annotator`](../claim-pdf-annotator/SKILL.md) — the audit's end deliverable. Reads the suggestion list and the carrier estimate and produces a marked-up copy of the carrier's estimate: the full estimate reproduced, with CCS's edits applied in place (changed values and new lines in green, a justification box beneath every change). Callable any time during or after the audit to get a current snapshot.
+- [`claim-supplement-package`](../claim-supplement-package/SKILL.md) — the legacy Word supplement document (cover letter, Alignment Summary, line-item alignments per the project's Sample Supplement). Superseded by the marked-up estimate; kept only for projects that specifically want that document.
 
 This file can be safely deleted from the plugin. It is left in place only so any reference to `claim-supplement-generator` from older skills or chats lands on this redirect rather than failing silently.

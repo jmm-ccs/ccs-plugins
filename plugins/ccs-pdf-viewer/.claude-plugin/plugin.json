@@ -1,0 +1,25 @@
+{
+  "name": "ccs-pdf-viewer",
+  "version": "0.1.0",
+  "description": "Interactive local PDF viewer connector. Lists local PDFs and serves their bytes so an in-app viewer can render any estimate client-side, without the host app's built-in PDF panel.",
+  "author": {
+    "name": "Construction Claim Services",
+    "email": "jmm@constructionclaimservices.com"
+  },
+  "keywords": [
+    "pdf",
+    "viewer",
+    "mcp",
+    "ccs",
+    "estimate",
+    "construction"
+  ],
+  "mcpServers": {
+    "ccs-pdf-viewer": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/server/pdf_server.py"
+      ]
+    }
+  }
+}
