@@ -368,7 +368,7 @@ If the file is missing, the line is missing, or the value is anything other than
 
 **Who writes the toggle.**
 
-- **`claim-audit-setup`** is the explicit multi-session setup skill. When invoked, it runs the workspace initialization (§2.3 + §2.6) and writes `**Mode:** multi-session` into `outputs/audit-progress.md`. It then stops without starting Stage 1 — the user begins Stage 1 in a fresh chat. This skill exists to run the one-time initialization in a project where the user wants the multi-session workflow without immediately starting Stage 1; in a fresh project, simply invoking any stage skill directly will also default to multi-session and create the workspace.
+- **`claim-audit-setup`** is the explicit multi-session setup skill. When invoked, it runs the workspace initialization (§2.3 + §2.6) and writes `**Mode:** multi-session` into `outputs/audit-progress.md`. It then stops without starting Stage 1 — the user begins Stage 1 in a fresh chat. This skill exists to run the one-time initialization in a project where the user wants the multi-session workflow without immediately starting Stage 1; in a fresh project, a stage skill invoked before setup does **not** create the workspace — per §2.14 it refuses and sends the user to `/claim-audit-setup` first.
 - **`forensic-claim-audit`** is the single-session entry point. When *invoked* by the user, it reads the current Mode:
   - If the Mode line says `single-session` already, it proceeds without asking — the project is already aligned with the orchestrator.
   - Otherwise (Mode is `multi-session`, the line is missing, or the file doesn't exist — i.e., the project is in the default multi-session state), it uses `AskUserQuestion` to ask whether to switch to single-session for this run. The default answer is **No** (keep multi-session), in which case the orchestrator stops and points the user at the appropriate stage skill or `claim-audit-setup`. **Yes** switches the Mode line to `single-session` and the orchestrator proceeds end-to-end.
@@ -579,7 +579,7 @@ This is enforcement, not advice. *"The user clearly wants to keep going"* is not
 
    Utilities that depend on audit state carry their own version of this (e.g., the estimate markup and the XLSX export refuse if the suggestion list has no accepted entries yet; the finalizer refuses until Stage 13 is `Complete`). Each utility's Prerequisite names its specific gate.
 
-3. **Idempotency gate (setup).** Setup must not silently clobber an audit that already exists. Before initializing anything, setup checks whether the project was already set up — the same signal: does `outputs/audit-progress.md` already exist with real audit state in it? If so, setup does **not** proceed. It confirms first, via `AskUserQuestion`, with this question:
+3. **Idempotency gate (setup).** Setup must not silently clobber an audit that already exists. Before initializing anything, setup checks whether the project was already set up — the same signal as the active-project gate: does `outputs/audit-progress.md` already exist? (Setup is the only thing that creates it.) If so, setup does **not** proceed. It confirms first, via `AskUserQuestion`, with this question:
 
    > "This project has already been set up. Are you sure you want to set it up again? This could erase some of your previous work."
 
