@@ -114,6 +114,15 @@ Provide comprehensive analysis and actionable recommendations without artificial
 
 ### 2.3 Carrier Estimate Protocol — preserve form, structure, order, numbering
 
+#### The carrier estimate's two roles — and the one it never holds
+
+The carrier's estimate (the PDF) is authoritative in exactly **one** way and powerless in another. Keep these two roles separate; collapsing them is the core error this rule guards against.
+
+- **Role 1 — authoritative for its own text.** The estimate is the last word on what the carrier actually *wrote*: item numbers, titles, quantities, unit prices, M/E/L flags, room names, diagram geometry. When you quote a carrier line, quote it verbatim and never invent or silently "fix" what it says (§5 item-name match, §6 HALT). **"Anchor against the source," wherever this plugin uses that phrase, means this and only this:** read the PDF and reproduce its text exactly so you don't fabricate it.
+- **Role 2 — NOT authoritative for reality.** The estimate has **no** standing on what the correct scope, quantity, grade, or price actually *is*. It is the document the audit measures, not the standard it is measured against. Every carrier number and every carrier omission is **presumed wrong until project evidence, a verified industry standard, or a verified citation shows otherwise** — that presumption is the whole reason the 13 stages exist. A value is not correct because the carrier printed it.
+
+**The carrier estimate is therefore never "the source of truth."** Do not call it that, and do not reason as if it were. The audit's source of truth is the **suggestion list** — the accumulated, evidence-backed record described below; the carrier estimate is the *thing being audited against* that evidence (the defendant, not the judge). If you ever find yourself accepting a carrier number simply because it appears on the PDF, you have merged Role 1 into Role 2 — stop and ask: *authoritative for its own text, or for reality?* Only the first is ever true.
+
 #### What the audit produces
 
 The audit does **not** produce a rewritten or alternative estimate. It produces a set of *suggestions* referenced against the carrier's existing line items. CCS uses Xactimate (separately, after the audit) to build the line-item supplement estimate, drawing from these suggestions.
@@ -740,6 +749,7 @@ This gate exists because the user is the one who can spot when a directive has s
 These are the manual checks the user already runs. Run them on yourself first.
 
 - **Item-name match**: every line item you reference must match the carrier's PDF exactly (item number + title). If you say "Item 47: Custom Vanity Installation" and the PDF says "Item 47: Paneling," you have hallucinated. Use the `Read` tool on the carrier PDF to confirm the exact text before quoting it.
+- **Carrier estimate is not the source of truth (§2.3 two-roles rule)**: confirm you did not accept any carrier quantity, price, grade, or omission as correct merely because it appears on the PDF. The estimate is authoritative for *its own text* (quote it verbatim), never for *reality* (scope/quantity/price are presumed wrong until evidence or a verified standard confirms them). If you described or treated the carrier PDF as "the source of truth," or leaned on a carrier number with no evidence behind it, you merged the two roles — re-do that reasoning against project evidence.
 - **Math integrity per §1.4**: every number in your response has provenance. Calculated numbers ran through `bash` and show what/why/math. Copied numbers show what/why/where. Any number that came from your head fails the check.
 - **No sequence gaps**: don't skip rooms or items. If the PDF has "Master Toilet," your audit must too.
 - **Next-stage routing (§4)**: at a stage-end gate, the stage you send the user to is the one immediately after the current stage in §4's canonical order (current + 1; Stage 13 → Final Delivery). Never route to the same or an earlier stage. If you're about to name an earlier stage as "next," you've slipped — re-read §4's table.
