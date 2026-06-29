@@ -30,7 +30,7 @@ Do **not** try to audit the whole estimate in one response. The carrier's estima
 
 For each room (within the current macro-area):
 
-1. **Anchor against the source.** Use `Read` on the carrier PDF and quote the room title and item list (item numbers and titles) directly from the PDF. If you cannot quote a number-and-title pair from the PDF, do not include it.
+1. **Anchor against the carrier's text (Role 1 only — §2.3).** Use `Read` on the carrier PDF and quote the room title and item list (item numbers and titles) directly from the PDF. If you cannot quote a number-and-title pair from the PDF, do not include it. Anchoring means reproducing the carrier's text verbatim so you don't invent it — it does **not** mean treating the carrier's scope, quantities, or pricing as correct. The carrier estimate is the document being audited, **never the source of truth** (§2.3 two-roles rule); its numbers are presumed wrong until project evidence or a verified standard confirms them.
 
 2. **Walk the carrier's items in order.** For each carrier item:
    - State the item number and title exactly as written.
