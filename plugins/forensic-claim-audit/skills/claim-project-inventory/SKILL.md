@@ -170,14 +170,14 @@ Use the `xlsx` skill to convert the file table from `project-inventory.md` into 
 
 Freeze the header row in each sheet. Apply column widths to fit content. Sort the Files sheet by Category → Path → Filename.
 
-## Step 6 — Confirm to the user
+## Step 6 — Hand the files to the user and confirm
 
-The chat message is the user's first look at what's missing — they should be able to act on it without opening either output file.
+**Hand the user the two inventory files** (the file-sharing / present-files step) so they receive `outputs/project-inventory.md` and `outputs/project-inventory.xlsx` directly. The chat message is the user's first look at what's missing — they should be able to act on it without opening either file.
 
 The closing message includes:
 
 - The total file count and the number of categories present.
-- The two output paths (`outputs/project-inventory.md` and `outputs/project-inventory.xlsx`).
+- That the two inventory files have been handed to them.
 - If every expected item is present: a single line saying the workspace has everything the audit needs, ready for Stage 1.
 - If anything's missing: a header like "Things the audit was expecting and didn't find:" followed by one bullet per missing item. Each bullet uses the **What it is** description from Step 4 — the description, not the label. End with a one-line note that the user should add what applies and skip what doesn't (e.g., the drying-log line is only relevant if this is a water-loss claim).
 

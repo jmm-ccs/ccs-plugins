@@ -103,9 +103,9 @@ If any check fails, fix and re-render the affected page(s).
 
 ## Output
 
-Short confirmation in chat — no 4-section response. The message includes:
+**Hand the marked-up estimate to the user** (the file-sharing / present-files step) so they receive the PDF directly, not just a path — include the `-ES` Spanish copy too if bilingual mode produced one. Then a short confirmation in chat — no 4-section response. The message includes:
 
-- The saved file's path (`outputs/[carrier-pdf-name]-annotated.pdf`).
+- That the marked-up estimate has been handed to them (saved at `outputs/[carrier-pdf-name]-annotated.pdf`).
 - How many edits were applied to the estimate (green changes + green new lines).
 - If any entries couldn't be located, each one as:
   - Its suggestion number,
