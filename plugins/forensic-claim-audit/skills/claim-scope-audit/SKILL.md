@@ -133,6 +133,8 @@ This is a file update, not a suggestion — it doesn't go through the per-sugges
 
 This step runs on **every claim** — with or without a walkthrough video — after the last macro-area's cross-walk is confirmed and **before the stage-end verification gate**. It does two jobs at once: ties every photo to a room so later stages can cite photos by room, and verifies the photos don't show more property than the room list covers. It sits before the gate precisely because the second job can produce scope findings.
 
+Run it as a loop (§2.15, loop 6): a photo or frame that maps to no listed room is a signal the room list is incomplete — resolve it as a scope finding, add the room, and re-check coverage. Repeat until every photo and frame maps to a confirmed room or is marked Unidentifiable.
+
 1. Use `Read` on each photo — but photos already examined during Method step 2 are still in context; don't re-read those, only `Read` photos not yet looked at. Use capture timestamps where available — people photograph room by room, so time order approximates the walk path — together with the cross-walked room list and the diagram adjacencies.
 2. Build the full mapping in one pass: a table of photo filename → room → one-line note of what the photo shows.
 3. Every photo must land in exactly one of three places:

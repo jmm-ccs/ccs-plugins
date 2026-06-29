@@ -207,7 +207,7 @@ When a substantive audit response generates one or more suggestions:
    - **Accept** — append the entry to `outputs/audit-suggestion-list.md` with disposition `Agreed`, writing the plain-language Why + source (§1.5) into the `Supporting evidence` field — the same text you stated before the question. Suggestion `#[N]` is now locked into the list.
 
      > **§1.5 completeness gate — run this before the row is written, every time.** The append is blocked unless **both** are true: (1) the `Supporting evidence` field has a plain-language **Why**, and (2) it has a **Source** that is exactly one of the three §1.5 kinds — a named project file, a verified citation, or an openly flagged judgment call. If either is missing, vague, or a category name, **do not write the row.** Fix the field first, then append. A suggestion that can't pass this gate is not ready to be a suggestion.
-   - **Reject** — discard the suggestion. Do **not** add to the suggestion list. Note the rejection in chat ("Suggestion #N rejected — not added to the suggestion list."). The number `[N]` is consumed and not reused.
+   - **Reject** — discard the suggestion. Do **not** add to the suggestion list. Note the rejection in chat ("Suggestion #N rejected — not added to the suggestion list."). **Record one line in `outputs/rejected-suggestions.md`** — the suggestion summary and why it was rejected (the user's reason if they gave one; otherwise a short note) — per the rejection-feedback loop (§2.15); create that file on the first rejection. The number `[N]` is consumed and not reused.
    - **Modify** — gather the modification (use the user's per-question Notes if they provided one with their answer; if not, follow up in chat with a single targeted question asking what to modify). Apply the modification, restate the modified suggestion in chat, then re-call `AskUserQuestion` for the same suggestion `#[N]` with the modified summary. If the user accepts, append to the suggestion list with disposition `Agreed` (no separate `Modified` state — once accepted, it's accepted). If they reject or modify again, repeat.
    - **Ask a question about this suggestion** — answer the user's question (use their Notes field if they typed it; if not, follow up in chat to gather the question). After the user is satisfied with the answer, re-call `AskUserQuestion` for the same suggestion `#[N]`. The eventual outcome is Accept (→ Agreed), Reject (→ discard), or Modify (→ as above).
 
@@ -267,7 +267,7 @@ The principle is: anyone reading the suggestion list or the marked-up estimate s
 
 ### 2.4 Scope Creep / Audit-Myopia Check
 
-**Before** making any recommendation, audit the proposed correction against (a) the carrier's estimate (use `Read` on the carrier PDF) and (b) all prior recommendations in this audit (use `Read` on the suggestion list — see §2.3), to confirm you are not double-correcting, double-counting, or otherwise inflating the estimate via duplication. Failure to run this check every single time is a failure of the global task.
+**Before** making any recommendation, audit the proposed correction against (a) the carrier's estimate (use `Read` on the carrier PDF), (b) all prior recommendations in this audit (use `Read` on the suggestion list — see §2.3), and (c) the rejection log `outputs/rejected-suggestions.md` if it exists (the rejection-feedback loop, §2.15), to confirm you are not double-correcting, double-counting, otherwise inflating the estimate via duplication, or re-proposing something the user already rejected (unless something material has changed). Failure to run this check every single time is a failure of the global task.
 
 ### 2.5 Hyperbolic Language Self-Check
 
@@ -555,13 +555,15 @@ Generate that question set yourself, from the thing in front of you, then run it
 
 **Where it shows up.** When a suggestion came from a question no checklist contained, say so in the §3 Analysis — name the chain of reasoning that produced it. That is the visible evidence the self-interrogation actually ran, and it is exactly the kind of finding CCS is paying for.
 
+**Run it as a loop, not a single burst (§2.15).** One generative pass under-asks. After listing the questions, ask what you left out and go again, until a pass surfaces nothing new — only then check the carrier's treatment against the full set.
+
 ### 2.13 Examine what's already in the claim as deeply as what's missing
 
 Every stage already hunts for what the carrier *missed* — omitted rooms, absent line items, dropped companion items, un-scoped code upgrades. **Keep that hunt at full strength. Nothing in this section reduces it.**
 
 **Added on top of it:** apply the same forensic depth — the full §2.12 self-interrogation — to every line item the carrier *did* include. An item being present on the estimate is not evidence that it is correct. For each existing line, go past *"is it here?"* to the whole set of questions §2.12 generates about it: is the quantity right for the real measured scope, is the unit price current for this jurisdiction, are Material / Equipment / Labor each present where they belong, is the waste factor appropriate, is the grade matched to the actual finish, is it even the right line code for what the work truly is, does its presence imply companion or downstream work that isn't here? A present-but-wrong line is as much a finding as a missing one, and it is found only by examining what's already there as hard as you look for what's not.
 
-**This is depth, not priority.** Do not rank present-item scrutiny ahead of missing-item detection, and do not trade one off against the other — they run at full strength at the same time. The reason this is written as *added depth* and never as *"prioritize"*: telling the audit to prioritize one thing quietly slackens everything else, and the missed-item hunt must never slacken. Both are the job, fully, simultaneously.
+**This is added depth — both run at full strength.** Examining what's already there does not come at the expense of hunting for what's missing. The two happen together, each at full strength, on every pass: the search for omissions stays exactly as aggressive as it is everywhere else in this audit, and the scrutiny of existing lines is layered on top of it. There is no trade-off to weigh and none to make — never let one draw effort from the other. Both are the job, fully, at the same time.
 
 ### 2.14 Preconditions & sequencing — refuse until valid, every time
 
@@ -588,6 +590,43 @@ This is enforcement, not advice. *"The user clearly wants to keep going"* is not
 **Generalize the pattern.** Every stage and every utility gets a precondition check of this shape at its start, **immediately after it reads the protocols** — find the analogue of the out-of-project problem for that specific skill and guard it. A skill with no meaningful precondition beyond "a project exists" still runs the active-project gate. The default posture is: verify first, refuse clearly if not valid, only then do the work.
 
 **How to refuse.** A refusal is short, plain (§9 voice), and actionable: one line on why it can't run yet, one line on the exact command to run first. No 4-section analysis, no apology, no audit work of any kind. Then stop, and re-evaluate from scratch the next time the skill is invoked.
+
+### 2.15 Feedback loops — verify, revise, re-verify
+
+A check that runs once and reports is weaker than a check that runs, finds a problem, **sends the work back to be fixed, and runs again.** Most of the checks in these protocols (§3's final pass, §5's self-checks) read as one-pass gates. Treat them as **loops**: when a check fails, do not just flag it and move on, and do not show the user the flawed output — correct the underlying work, then re-run the check on the corrected version. Keep looping until the check passes, or until you hit a genuine dead end (missing information, a real judgment call), at which point you escalate to the user instead of guessing.
+
+The shape is the same everywhere: **produce → check → (fail) revise → re-check → … → pass.** A loop ends one of two ways — it passes, or it converts into a question for the user (the §1.4 bash-failure flow, the per-suggestion Modify/Ask flow, or a plain `AskUserQuestion`). It never ends by shipping output that failed its own check.
+
+**The keystone — the goal-fit loop.** The most important loop checks a suggestion against *the goal of the work*, not just its internal correctness. The other loops ask *"is this suggestion well-formed?"*; this one asks *"is making this suggestion the right call?"* CCS's goal is *"Getting Contractors the Funds to Rebuild Properly Without Insurance Fights or Homeowner Negotiation"* — and a specific claim may set a narrower goal, in which case use that. For every suggestion, once it is well-formed (loops 1–3 below), check it against that goal before showing it: does making this suggestion genuinely advance rebuilding properly, or is it technically-correct edge-case revenue that invites an insurance fight or a homeowner negotiation? If it is weak or misaligned, that is **not** a reason to ship it as-is — loop back and re-analyze (take another measurement, find a stronger source, tighten the frame) to either strengthen it into something that plainly serves the goal, or surface the goal-risk inside the suggestion's own presentation so the decision is made with eyes open. **Refine or flag — never silently drop**; you own the Accept/Reject call (§2.2, §2.3). The shape is exactly what good analysis always is: build → draft the suggestion → check it against intent → re-analyze → output. This is the finalizer's alignment-and-friction judgment (Phase 1, Goals 2–3) pulled forward to run on *every* suggestion during the audit, instead of once at the very end.
+
+The loops, by where they live:
+
+**Within a single response (self-verification):**
+
+1. **Per-suggestion verification loop.** Before any suggestion is shown or recorded, run its checks — math provenance (§1.4), plain-language Why + Source (§1.5), no hyperbole (§2.5), stayed in lane (§2.10). Any failure sends the suggestion back to be rewritten, then re-checked. It leaves the loop only when it passes all of them. (This makes §3's "Final factual integrity and logic pass" iterative, not one-shot.)
+2. **Carrier line-name match loop (self-HALT).** Whenever you quote a carrier line (number + title), re-read the carrier PDF and confirm the quote is exact. Mismatch → re-anchor against the PDF, correct the reference, re-check — before the user ever has to HALT you. The HALT protocol (§6) is the user-triggered version of this same loop; run it on yourself first.
+3. **Math plausibility loop.** After every calculation (§1.4), sanity-check the magnitude against construction reality (the §5 "no absurd unit costs" check). If the result is implausible, the inputs or the operation are wrong — re-derive and recompute; never ship the implausible number.
+
+**Across the questions you ask (completeness):**
+
+4. **Self-interrogation completeness loop (pairs with §2.12).** After generating "what is everything that could be checked about this?", run a second pass on the question set itself: *"what did I leave out?"* Add what surfaces, and repeat until a pass produces no new checkable questions. One generative pass under-asks; the loop is what makes §2.12 thorough rather than a single burst.
+
+**Against the sources (grounding):**
+
+5. **External-fact verification loop.** When verifying a code, rate, or standard (§1.2/§1.3), confirm the search result supports *this* claim for *this* jurisdiction — not merely the general idea. If it doesn't, refine the query and search again. Loop until the specific fact is verified for this context, or you can state plainly that it's unverifiable.
+6. **Scope-coverage loop (Stage 1).** Every photo and walkthrough-video frame must map to a confirmed room (the photo map). A piece of evidence that maps to no room is a signal the room list is incomplete — feed it back into another scope pass. Loop until every piece of evidence maps to a confirmed room or is marked Unidentifiable.
+
+**Across stages (consistency):**
+
+7. **Downstream-recompute loop.** Several stages' numbers are computed off the *current* scope of demolition/replacement: storage & debris (Stage 9), the trade roll-up (Stage 11), O&P / supervision / permits (Stage 12), sales tax (Stage 13). If scope changes after one of those has run — a later stage adds demolition, a HALT corrects a quantity, or the finalizer's Sanity Audit alters a scope-affecting suggestion — the dependent numbers are stale. Flag them and recompute; never let a downstream total keep a value its inputs no longer support.
+8. **Trade-reconciliation loop (Stage 11).** Assign every line item to a trade, then reconcile the Trade Summary against the line-item detail. If they don't reconcile, an item is unassigned or mis-assigned — find it, fix it, reconcile again. Loop until the summary ties out exactly.
+9. **Audit-myopia / dedupe loop (extends §2.4).** Before recording a suggestion, check it against the prior suggestion list **and** the rejection log (loop 10). On overlap with a prior suggestion, reconcile or merge rather than create a near-duplicate; on a match to a previously rejected item, don't re-propose it unless something material changed.
+
+**Over the course of the audit (learning):**
+
+10. **Rejection-feedback loop.** When the user Rejects a suggestion (§2.3), record one line — the suggestion and *why* it was rejected — in `outputs/rejected-suggestions.md` (create it lazily on the first rejection). Consult that log during the audit-myopia check (loop 9) so the same low-value item isn't proposed again in a later room or stage. A rejection becomes a signal that improves the rest of the audit instead of wasted motion. Across claims, both the accepted and the rejected suggestions are rolled up — scrubbed and feature-light — into the auditor's durable experience log by the `claim-experience-export` utility (the capture half of the learning loop, and the labeled data a future scoring model would train on).
+
+These are mostly silent — they run inside a response and the user sees only the corrected output. The user-facing loops already exist and are the model to copy: per-suggestion Accept/Reject/Modify/Ask (§2.3), the per-room/area/stage verification gates (§4), HALT (§6), and the finalizer's Sanity Audit. Every loop above either ends by passing or converts into one of those user-facing questions — never by shipping output that failed its own check.
 
 ---
 
@@ -716,6 +755,8 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Generative self-interrogation (§2.12)**: for the things this response audited, did you first ask *"what is everything that could be checked about this?"* and run the questions the checklist didn't contain — not just the listed checks? If a finding came from an off-checklist question, the Analysis names the reasoning chain that produced it.
 - **Present-item depth (§2.13)**: the carrier lines already in scope this response were examined as hard as missing items were hunted — quantity, unit price, M/E/L, waste, grade, line code, implied companion work — with the missed-item hunt undiminished. Depth was added, nothing was traded off.
 - **Preconditions (§2.14)**: this skill verified its preconditions (active project; for a stage, prior stage `Complete`/`Skipped`; for setup, the idempotency confirm) before doing any work, and would refuse cleanly — and re-check from scratch next time — if they weren't met.
+- **Feedback loops (§2.15)**: every check this response ran that failed was *looped* — the underlying work was corrected and the check re-run — not merely flagged. No output that failed its own check was shipped; anything that couldn't be resolved was turned into a user-facing question, not guessed.
+- **Goal-fit (§2.15 keystone)**: every suggestion this response produced was checked against the project goal — not just its internal correctness — before being shown. Anything weak or goal-misaligned was strengthened, reframed, or had its goal-risk surfaced in the suggestion itself; nothing was silently dropped.
 - **Action log (§9.4)**: every tool call this response made has its one-line note.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.
