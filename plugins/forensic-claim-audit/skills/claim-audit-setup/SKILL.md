@@ -7,7 +7,7 @@ description: One-time setup for a CCS forensic claim audit that will run across 
 
 Goal: do all the one-time project setup the master orchestrator (`forensic-claim-audit`) does at the start of an audit, then **stop** without beginning Stage 1. This skill explicitly initializes the workspace files (`outputs/`, the suggestion list, the progress file, and all three live artifacts) and locks the audit mode at `multi-session` — each stage runs in its own fresh chat in the same Cowork project.
 
-Multi-session is the **default mode** for this plugin (see §2.7 of the protocols), so a stage skill invoked in a brand-new project will also default to multi-session and create the workspace lazily. This skill is for users who prefer to do that initialization explicitly up front — e.g., to confirm the workspace is wired up correctly, to seed the audit-progress live artifact in the Cowork sidebar before Stage 1, or to flip an existing single-session project back to multi-session without re-running the orchestrator.
+Multi-session is the **default mode** for this plugin (see §2.7 of the protocols). Setup is what creates the workspace — per §2.14, a stage skill invoked in a brand-new project that hasn't been set up refuses and routes the user here (`/claim-audit-setup`) rather than initializing anything. This skill is for users who prefer to do that initialization explicitly up front — e.g., to confirm the workspace is wired up correctly, to seed the audit-progress live artifact in the Cowork sidebar before Stage 1, or to flip an existing single-session project back to multi-session without re-running the orchestrator.
 
 This skill is the multi-session counterpart to `forensic-claim-audit`. It writes `**Mode:** multi-session` into `outputs/audit-progress.md`; from that point on, every stage skill reads the mode at its end-of-stage gate (§4 of the protocols) and instructs the user to start the next stage in a fresh chat.
 
@@ -25,7 +25,7 @@ Do this every time this skill is invoked, regardless of whether the protocols we
 
 ## Step 0.4 — Already-set-up check (idempotency)
 
-Per §2.14 of the protocols. Before the pre-flight, before touching a single file, check whether this project was **already set up**: does `outputs/audit-progress.md` already exist with real audit state in it (stage rows, not just an empty shell)?
+Per §2.14 of the protocols. Before the pre-flight, before touching a single file, check whether this project was **already set up**: does `outputs/audit-progress.md` already exist? (Setup is the only thing that creates it, so its presence means a prior setup ran.)
 
 - **If yes**, do not proceed silently. Use `AskUserQuestion` with exactly this question:
 

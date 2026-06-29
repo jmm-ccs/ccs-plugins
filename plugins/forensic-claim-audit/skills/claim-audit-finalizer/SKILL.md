@@ -48,9 +48,13 @@ Three goals, run in order. Update the suggestion list (`Edit` on `outputs/audit-
 
 Anything that fails: fix the entry so it holds up (it stays `Agreed`), set its **Disposition** to `Needs-info` with a Claude note saying what's missing, or — if it can't be supported at all — drop it from the suggestion list. Do not proceed to Phase 2 with known integrity gaps.
 
+**Downstream-recompute check (§2.15, loop 7).** If fixing or dropping an entry changes the scope of demolition or replacement — a quantity, an added or removed line, a new or dropped room — the totals computed off that scope earlier in the audit are now stale: storage & debris (Stage 9), the trade roll-up (Stage 11), O&P / supervision / permits (Stage 12), and sales tax (Stage 13). Recompute each affected total against the corrected scope before delivery; don't ship a downstream number whose inputs just changed.
+
 ### Goal 2 — Alignment with the CCS objective
 
 CCS's stated goal is *"Getting Contractors the Funds to Rebuild Properly Without Insurance Fights or Homeowner Negotiation."* For each entry, ask: *does this suggestion meaningfully advance the contractor's ability to rebuild properly, or is it edge-case revenue that risks the relationship with the carrier and the homeowner?*
+
+This is the **final** pass of a judgment that now runs on every suggestion *during* the audit (the §2.15 keystone goal-fit loop). Here you confirm it held across the whole list — entries should already have been strengthened or had their goal-risk surfaced when first proposed; flag anything that slipped through.
 
 Default to keeping everything technically correct. Flag for human decision (these are starting-point friction categories — apply additional considerations as the project warrants):
 

@@ -21,7 +21,7 @@ Do this every time this skill is invoked, regardless of whether the protocols we
 
 ## Precondition (refuse until met)
 
-Per §2.14 of the protocols. This is the **pre-audit pre-flight**, so it deliberately does **not** require an active claim project — it is exactly what the user runs *before* `/claim-audit-setup` to see whether the workspace has what the audit needs. Its only precondition is the workspace itself: if it holds no files at all, say so plainly and stop (Step 1's file count surfaces this). Re-check on every attempt.
+Per §2.14 of the protocols. This is the **pre-audit pre-flight**, so it deliberately does **not** require an active claim project — it is exactly what the user runs *before* `/claim-audit-setup` to see whether the workspace has what the audit needs. Its only precondition is the workspace itself: if it holds no files at all, say so plainly and stop (Step 1's file count surfaces this). Re-check on every attempt. (Writing its inventory files into `outputs/` does not make the project "set up" — only setup creates the `outputs/audit-progress.md` that the §2.14 active-project gate looks for.)
 
 ## Step 1 — Walk the workspace
 
