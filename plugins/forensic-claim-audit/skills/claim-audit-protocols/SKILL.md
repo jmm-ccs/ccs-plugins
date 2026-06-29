@@ -192,18 +192,21 @@ When a substantive audit response generates one or more suggestions:
 
 2. **For each suggestion in order** — every one, with no skipping, summarizing, or batching:
 
+   **Before proposing it, run the §2.12 per-suggestion self-interrogation (required).** Chase what this specific suggestion actually implies, requires, and depends on in the real world — material reality for a physical item, and the matching families for any other kind (code/permit, labor & sequencing, companion & downstream work, access & protection, measurement basis, durability) — following each answer to the next until the chain stops producing new questions. A suggestion that hasn't been chased to the end is half-formed; finish it before it goes any further. **Then carry that reasoning into how you present the suggestion** — the material implications the self-interrogation turned up (stock sizes / cuttability, forced companion or matched replacements, code/permit triggers, sequencing, the measurement basis) go into both the basis you state and the question you ask, so the user confirms the *reasoning*, not just the bare fix. Where it strengthens the case, fold it into the `Supporting evidence` too so it carries onto the marked-up estimate.
+
    **First, state the basis in plain language (required, §1.5).** Immediately before the `AskUserQuestion` call, write a short plain-language note in the chat giving (a) **why** this suggestion exists — one or two basic-language sentences on what's wrong/missing and why the fix is justified — and (b) the **exact source file(s)** it rests on and what they show (carrier PDF item #, photo file name, sketch area, code citation, etc.). The user must be able to read this note plus the one-line summary and understand the suggestion without asking a question. This is the same plain-language Why + source you record in the entry's `Supporting evidence` field on Accept — write it once, here, and reuse it.
 
    **Then** call `AskUserQuestion` with:
-   - **Question text — must itself carry the plain-language Why + named source (§1.5), not just the summary.** The user has to be able to make the Accept/Reject decision from the question alone, without scrolling back to the chat note. Format:
+   - **Question text — must itself carry the plain-language Why, the material reasoning, and the named source (§1.5), not just the summary.** The user has to be able to make the Accept/Reject decision from the question alone, without scrolling back to the chat note. Format:
 
      ```
      Suggestion #[N]: [one-line summary of the suggestion].
      Why: [one or two basic-language sentences — what's wrong/missing and why the fix is justified].
+     Reasoning: [the real-world implications from the §2.12 self-interrogation that shaped this fix — stock sizes / cuttability, forced companion or matched replacements, code/permit triggers, sequencing, the measurement basis. Include it whenever the self-interrogation shaped the scope, quantity, or components; drop the line only when nothing material came up.]
      Source: [the named file(s) + the exact location inside them, and what they show].
      ```
 
-     This is the same plain-language Why + source from the chat note above and the `Supporting evidence` field — write it once and reuse the same words in all three places. Keep it tight, but never drop the Why or the Source to shorten it.
+     The Why and Source are the same plain-language Why + source from the chat note above and the `Supporting evidence` field — write them once and reuse the same words. Keep it tight, but never drop the Why, the Source, or material Reasoning to shorten it.
    - **Options (4):**
      - `Accept`
      - `Reject`
@@ -560,6 +563,26 @@ Generate that question set yourself, from the thing in front of you, then run it
 
 *Illustration only — do not hardcode these as "the checks":* an air handler tagged R-22 → R-22 is a phased-out refrigerant → it can't be recharged or reinstalled like-for-like → its matched condenser must therefore be replaced too, even if undamaged → and the replacement system must meet *current* efficiency and code. Proper self-interrogation surfaces that entire chain from the single fact "R-22," unprompted. The value is not the R-22 answer — it is the *habit* that produced it. Run that habit on everything the audit touches.
 
+**Always run the material-reality questions.** One dimension of this self-interrogation is non-negotiable on *every* suggestion that involves a physical item, material, or component — ask, every time, whether the replacement is even physically and commercially real:
+
+- **Sizes and availability.** What sizes / lengths / configurations does this thing actually come in? Does the size the scope implies exist, or only a larger standard stock size? (Shiplap, for instance, commonly comes in 8-ft lengths — a 7-ft run still buys 8-ft boards, with the waste and the cut that follow.)
+- **Can it be cut or modified, or not?** Some materials cut to fit; others — pre-formed units, fixed-size assemblies — don't, which changes quantity, waste, and what actually has to be ordered.
+- **Does replacing it force replacing something matched or connected?** A component is rarely an island. Replacing one part can require replacing the parts it mates with *even when those are undamaged* — the R-22 system above (the air handler **and** its matched condenser), and the same logic for a drip pan, the connected pipework / line set, fasteners, gaskets, transitions, or a discontinued part with no like-for-like match.
+- **Like-for-like, or a forced upgrade?** If the exact item is unavailable, banned, or out of code, what is the real replacement — and does that pull in additional work or cost?
+
+If a suggestion proposes replacing a thing, it is not complete until these are answered for that thing. A quantity or price that ignores stock sizes, cuttability, or the components that must come along is wrong even when it looks reasonable.
+
+**This is the rule for every suggestion, not just physical ones.** The material-reality questions above are *one family* — the version for a physical item. **Every** suggestion of every kind gets the same treatment before it is proposed: run the generative chain on *that specific suggestion* and ask what it actually implies, requires, and depends on in the real world, following each answer to the next question until the chain stops producing new ones. Different suggestion types pull different families of questions — starting points, never the whole list (the no-cap rule applies):
+
+- **Code / ordinance / permit:** does this trigger an upgrade, a permit, an inspection, or a connected code requirement?
+- **Labor & sequencing:** what has to happen before or after this — prep, demo, protection, drying, cure time, a second mobilization, a trade dependency?
+- **Companion & downstream work:** what else must be done *because* this is done — adjacent finishes, transitions, matching, reconnection, cleanup?
+- **Access & protection:** to do this, what has to be moved, masked, contained, or protected — and is that scoped?
+- **Measurement & quantity basis:** is the quantity tied to the real measured scope (waste, overage, line-of-sight, continuous runs), not a guess?
+- **Durability / correctness:** will this actually hold up, match, and be code-correct — or is it a patch that creates a future failure?
+
+The mandate is universal: **no suggestion — of any type — is complete until it has been run through this self-interrogation.** A suggestion that names a fix without having chased its real-world implications to the end is half-formed; finish it before it is shown.
+
 **It is fine to keep and grow the starter checklists** in these skills — they make the obvious checks reliable. What is never acceptable is letting the checklist *cap* the inquiry. Run the list **and** the questions the list didn't contain.
 
 **Where it shows up.** When a suggestion came from a question no checklist contained, say so in the §3 Analysis — name the chain of reasoning that produced it. That is the visible evidence the self-interrogation actually ran, and it is exactly the kind of finding CCS is paying for.
@@ -777,7 +800,8 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Every suggestion dispositioned (§2.3)**: count the suggestions this response produced and confirm each got its own `AskUserQuestion`. None were batched into one question, collapsed into a single "shall I add these?", or left in prose without a per-suggestion decision. Don't move to the gate until the counts match.
 - **Bilingual handling (§2.11)**: if `**Languages:**` is `English + Spanish`, confirm (a) you did **not** inject Spanish into the English suggestion list, the artifact, or your other English surfaces; (b) every row you added or changed was mirrored into the Spanish duplicate `outputs/audit-suggestion-list-es.md`, with all numbers, codes, and carrier-line references identical to the English row; and (c) each approval prompt was shown in **Spanish only**. If `English`, no Spanish anywhere.
 
-- **Generative self-interrogation (§2.12)**: for the things this response audited, did you first ask *"what is everything that could be checked about this?"* and run the questions the checklist didn't contain — not just the listed checks? If a finding came from an off-checklist question, the Analysis names the reasoning chain that produced it.
+- **Generative self-interrogation (§2.12)**: **every suggestion** this response produced — of any kind — was run through the §2.12 self-interrogation before being shown: its real-world implications chased to the end (material reality for physical items; code/permit, labor & sequencing, companion/downstream, access/protection, measurement, durability for the rest), not just checked against a list. If a finding came from an off-checklist question, the Analysis names the chain that produced it. The material reasoning was carried into the per-suggestion question, so the user confirmed the reasoning, not just the bare fix.
+- **Material reality (§2.12)**: every suggestion involving a physical item or replacement answered the real-world questions — what sizes it actually comes in (and whether the needed size even exists), whether it can be cut to fit, and whether replacing it forces replacing matched/connected/companion parts even if undamaged (e.g., a matched condenser, drip pan, line set). A quantity or price that ignored stock sizes, cuttability, or forced companion replacement was fixed before the suggestion was shown.
 - **Present-item depth (§2.13)**: the carrier lines already in scope this response were examined as hard as missing items were hunted — quantity, unit price, M/E/L, waste, grade, line code, implied companion work — with the missed-item hunt undiminished. Depth was added, nothing was traded off.
 - **Preconditions (§2.14)**: this skill verified its preconditions (active project; for a stage, prior stage `Complete`/`Skipped`; for setup, the idempotency confirm) before doing any work, and would refuse cleanly — and re-check from scratch next time — if they weren't met.
 - **Feedback loops (§2.15)**: every check this response ran that failed was *looped* — the underlying work was corrected and the check re-run — not merely flagged. No output that failed its own check was shipped; anything that couldn't be resolved was turned into a user-facing question, not guessed.
@@ -935,6 +959,7 @@ Never list missing items by category name only (`drying-log`, `measurement-repor
 
 > Suggestion #14: Add `R&R Subfloor` under Item 47 (Kitchen flooring tear-out). Quantity 120 SF, $2.10/SF.
 > Why: the carrier's kitchen tear-out removes the flooring but never replaces the subfloor underneath it, and that subfloor gets damaged when the flooring comes up — so it has to be put back before new flooring goes down.
+> Reasoning: subfloor sheathing comes in 4×8 sheets cut to fit, so the 120 SF carries standard cut waste; and it has to go back in before the new flooring, so it's sequenced ahead of the floor line.
 > Source: carrier PDF Item 47 (Kitchen flooring tear-out, no subfloor line anywhere in the Kitchen) and photo `kitchen-floor-03.jpg`, which shows the exposed, water-stained subfloor.
 > Accept / Reject / Modify / Ask a question?
 
