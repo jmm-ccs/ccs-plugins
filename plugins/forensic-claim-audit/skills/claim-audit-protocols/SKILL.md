@@ -637,6 +637,21 @@ The loops, by where they live:
 
 These are mostly silent — they run inside a response and the user sees only the corrected output. The user-facing loops already exist and are the model to copy: per-suggestion Accept/Reject/Modify/Ask (§2.3), the per-room/area/stage verification gates (§4), HALT (§6), and the finalizer's Sanity Audit. Every loop above either ends by passing or converts into one of those user-facing questions — never by shipping output that failed its own check.
 
+### 2.16 Process-change requests — capturing improvements to how the audit works
+
+The other half of learning. The experience log (§2.15 loop 10, `claim-experience-export`) captures *which suggestions* land; this captures how *the process itself* should change. When a user asks the audit to work differently, that's a signal about the process — don't let it evaporate at the end of the chat.
+
+**When the user asks you to behave differently** — "always do X," "stop doing Y," "I'd rather you Z," "from now on…," or any request to change how a stage, a check, or the workflow runs:
+
+1. **Adopt it for the current work, within limits.** If it's a legitimate workflow or preference change, follow it for the rest of this session. The limit: it must not weaken the Factual Integrity protocols (§1), the preconditions/sequencing gates (§2.14), or the per-suggestion and verification gates (§2.3/§4) — those are load-bearing and stay in force. If the request would weaken one of those, say so plainly and do **not** silently adopt it (you can still capture it per step 3 — the maintainer decides whether it changes, not the session).
+2. **Ask, once, via `AskUserQuestion`, whether to save it.** Use this exact question text, verbatim: *"Would you like to save this change globally for Mariella to add to the plugin?"* Offer two options — `Yes` and `No`. (This wording is intentional — keep "globally," "Mariella," and "plugin" exactly as written; do not reword it to match the §9 voice rules.) One ask — don't nag.
+3. **If yes, log it.** Append a structured entry to the durable on-device change-request log, `~/.ccs-audit/plugin-change-requests.md` (the auditor's on-device CCS folder, alongside the experience log; create the folder/file if absent). Capture: the requested change, what the process does now, the part it affects (a stage / a utility / all stages / a situation), the user's rationale, whether you adopted it this session or only logged it (and why, if only logged), and — optionally — who requested it. Keep it about the *process*, not the claim: scrub claim specifics per the §2.15 PII rules. Then confirm it's on the list, in one line.
+4. **If no, just apply it** for the session (where allowed) and move on — nothing logged.
+
+The change-request log is exportable via `claim-export-plugin-changes` to send to whoever maintains the audit process — the same send-it-in pattern as the experience log. They review the list and fold the good changes into the process for everyone, so a request made once can become the default for the whole team.
+
+This applies in **every** skill and at any point — it is not gated on an active project (a user can ask for a process change anytime, mid-audit or not). It does **not** let a session rewrite the installed process on its own: a session adopts a change temporarily, but permanence always routes through the maintainer.
+
 ---
 
 ## 3. Output Format Requirements
@@ -767,6 +782,7 @@ These are the manual checks the user already runs. Run them on yourself first.
 - **Preconditions (§2.14)**: this skill verified its preconditions (active project; for a stage, prior stage `Complete`/`Skipped`; for setup, the idempotency confirm) before doing any work, and would refuse cleanly — and re-check from scratch next time — if they weren't met.
 - **Feedback loops (§2.15)**: every check this response ran that failed was *looped* — the underlying work was corrected and the check re-run — not merely flagged. No output that failed its own check was shipped; anything that couldn't be resolved was turned into a user-facing question, not guessed.
 - **Goal-fit (§2.15 keystone)**: every suggestion this response produced was checked against the project goal — not just its internal correctness — before being shown. Anything weak or goal-misaligned was strengthened, reframed, or had its goal-risk surfaced in the suggestion itself; nothing was silently dropped.
+- **Process-change capture (§2.16)**: if the user asked the audit to behave differently this response, you adopted it where allowed (never weakening §1 or §2.14), asked once via `AskUserQuestion` using the exact §2.16 wording ("Would you like to save this change globally for Mariella to add to the plugin?"), and logged it to the change-request list if they said yes.
 - **Action log (§9.4)**: every tool call this response made has its one-line note.
 
 If you catch yourself violating any of the above mid-response, stop, reset, and rewrite from the last verified anchor.

@@ -138,9 +138,9 @@ If any check fails, fix the affected deliverable(s) and re-run Phase 4. Do not a
 
 ## Phase 5 — Manual checks reminder
 
-After the deliverables are in place, tell the user the files are saved and present the six checks below for them to run themselves. The message:
+After the deliverables are in place, **hand the user the files** (the file-sharing / present-files step — both `outputs/audit-suggestion-list.xlsx` and the marked-up estimate `outputs/[carrier-pdf-name]-annotated.pdf`, plus any `-es`/`-ES` copies), then present the six checks below for them to run themselves. The message:
 
-- Opens with one sentence saying the files are saved and these checks are load-bearing.
+- Opens with one sentence saying the files have been handed to them and these checks are load-bearing.
 - Lists the six checks below, in this order, in the same plain-English action voice.
 - Has nothing else before, between, or after.
 
@@ -159,7 +159,7 @@ These checks are load-bearing. Do not skip the reminder, and do not let the user
 
 After the deliverables are produced and the manual-checks reminder has been delivered, write a short closing message. It includes:
 
-- The file paths (`outputs/audit-suggestion-list.xlsx` and `outputs/[carrier-pdf-name]-annotated.pdf`) so the user can find them.
+- That the files have been handed to them (the XLSX and the marked-up estimate).
 - That the checks above are what they should run on those files.
 - That confirming closes out the audit.
 

@@ -108,11 +108,11 @@ Run the §3 final pass on this export:
 
 If any check fails, fix and re-export. Do not advance to Step 5 with known integrity gaps.
 
-## Step 5 — Confirm to the user
+## Step 5 — Hand the file to the user and confirm
 
-The closing message includes:
+**Hand the file to the user** (the file-sharing / present-files step) so they receive the XLSX directly, not just a path to it — include the Spanish `-es` copy too if bilingual mode produced one. Then a short closing message:
 
-- The export path (`outputs/audit-suggestion-list-agreed.xlsx`) and the row count.
+- The row count, and that the file has been handed to them.
 - That the rows are sorted by stage of origin and then Carrier line.
 - That this can be re-run any time for a refresh.
 - That `/claim-audit-finalizer` produces the full-record XLSX (every entry, every disposition).

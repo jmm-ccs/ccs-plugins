@@ -74,11 +74,11 @@ The durable log is the auditor's own, on-device, and persists across **every** c
 
 This file is the raw, accumulating experience. It is already PII-scrubbed, so it is safe to share as-is.
 
-## Step 4 — Write the shareable export file
+## Step 4 — Write the file, then hand it to the user
 
-Write a single shareable copy to the claim's `outputs/` so the user can find and send it: **`outputs/experience-export-<project-slug>.jsonl`**, containing the auditor's **full** accumulated experience log (all claims to date) — that is what an aggregator wants from each teammate.
+Write a single shareable copy to the claim's `outputs/`: **`outputs/experience-export-<project-slug>.jsonl`**, containing the auditor's **full** accumulated experience log (all claims to date) — that is what an aggregator wants from each teammate. Then **hand it directly to the user** (the file-sharing / present-files step) so they actually receive the file to send on, not just a path.
 
-(If the user asks for only this claim's contribution, write just this claim's records as `outputs/experience-export-<project-slug>-thisclaim.jsonl` instead.)
+(If the user asks for only this claim's contribution, write just this claim's records as `outputs/experience-export-<project-slug>-thisclaim.jsonl` instead, and hand that over the same way.)
 
 ## Step 5 — Confirm to the user
 
@@ -86,7 +86,7 @@ State plainly, using `bash` counts (§1.4):
 
 - How many records were captured from this claim (accepted vs. rejected).
 - That they were rolled into the on-device experience log, and how many records the log now holds in total.
-- Where the shareable file is, and that it's PII-scrubbed and safe to send to whoever aggregates the team's learning set.
+- That the file has been handed to them, and that it's PII-scrubbed and safe to send to whoever aggregates the team's learning set.
 
 Do not start any audit stage or other next step.
 
