@@ -54,15 +54,15 @@ The progress file (`outputs/audit-progress.md`) carries the macro-areas as sub-p
 13. `claim-sales-tax-audit`
 
 **Output / utilities**
-- `claim-audit-finalizer` — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers dispositions on flagged entries, exports the suggestion list to XLSX (full record — all dispositions), invokes the estimate markup to produce the marked-up copy of the carrier's estimate, then runs a final fact-check across the deliverables (markdown / XLSX / marked-up estimate) to verify they faithfully match each other.
-- `claim-pdf-annotator` — produces the audit's **end deliverable**: a marked-up copy of the carrier's estimate. Reads the suggestion list and the carrier estimate, reproduces the full estimate, and applies CCS's edits in place — changed values and new lines in green, with a justification box beneath every change reading "[x] changed from [old] to [new] for [reason]." Saved as `outputs/[carrier-pdf-name]-annotated.pdf`. The finalizer auto-invokes this; the user can also invoke it standalone at any point during or after the audit for a current snapshot.
+- `claim-audit-finalizer` — end-of-audit closing flow. Runs the Supplement Sanity Audit, gathers dispositions on flagged entries, resolves every open flag with the user (unresolved entries stay off the output), collects user-confirmed wording for every reason box, then invokes the estimate markup to render and visually verify the marked-up copy of the carrier's estimate. (The XLSX export moved to the on-demand `claim-suggestion-list-export` skill.)
+- `claim-pdf-annotator` — produces the audit's **end deliverable**: a marked-up copy of the carrier's estimate, via the bundled interpret → render pipeline (Xactimate and Symbility, auto-detected and visually cross-checked). Reads the suggestion list and the carrier estimate, reproduces the full estimate, and applies CCS's edits in place — changed values, new lines (numbered `Supp-1.`, `Supp-2.`, … in output order), and new rooms in the CCS edit color, with a justification box beneath every change — then visually verifies every output page against the carrier estimate and sample supplements in a fix-and-recheck loop. Saved as `outputs/[carrier-pdf-name]-annotated.pdf`. The finalizer auto-invokes this; the user can also invoke it standalone at any point during or after the audit for a current snapshot.
 - `claim-supplement-package` — **superseded.** The legacy Word supplement document (cover letter duplicating the project's Sample Supplement, an Alignment Summary, and line-item alignments in the sample's format). The marked-up copy of the carrier's estimate now replaces it as the carrier-facing deliverable, so the standard output flow no longer produces it and the finalizer no longer invokes it. Kept in the plugin only for projects that specifically want the legacy document. Requires the Sample Supplement in the project folder.
 - `claim-video-intake` — on-demand utility. Converts walkthrough videos into audit-readable evidence: examines every frame, saves each visually distinct one as a timestamped still, transcribes the narration, and writes a per-video manifest into `video-intake/` in the project folder. The orchestrator runs it automatically before Stage 1 when an unprocessed video is present.
 - `claim-bilingual-mode` — on-demand utility. Turns project-wide Spanish output on or off (§2.11): English files stay English; the Spanish lives in separate `-es` duplicates of the suggestion list and every deliverable, and the per-suggestion approval popups are shown in Spanish.
-- `claim-suggestion-list-export` — on-demand utility. Exports only the **Agreed** entries from the suggestion list to `outputs/audit-suggestion-list-agreed.xlsx` (the CCS working set). Independent of the finalizer's full-record XLSX — the two outputs coexist. Use mid-audit any time CCS wants a fresh spreadsheet of the accepted suggestions.
+- `claim-suggestion-list-export` — on-demand utility. Exports only the **Agreed** entries from the suggestion list to `outputs/audit-suggestion-list-agreed.xlsx` (the CCS working set). Use mid-audit or at close-out any time CCS wants a spreadsheet of the accepted suggestions — the finalizer no longer exports an XLSX of its own.
 - `claim-project-inventory` — pre-flight document inventory. Walks the workspace, categorizes every file (carrier estimate, photos, sketches/floor plans, scope of work, measurement reports, drying logs, invoices, checklists, marketing sheets, etc.), flags expected-but-missing categories, and writes both `outputs/project-inventory.md` and `outputs/project-inventory.xlsx`. Invoked automatically by `claim-audit-setup` as part of the multi-session initialization, and also runnable on its own any time the user wants a fresh inventory.
 
-CCS builds the line-item supplement estimate in Xactimate from the XLSX; the marked-up copy of the carrier's estimate (the full estimate reproduced with CCS's edits applied in-line — changes in green, a justification box under each) is the carrier-facing deliverable that shows every correction in context on the carrier's own estimate.
+CCS builds the line-item supplement estimate in Xactimate from the Agreed-only XLSX (`claim-suggestion-list-export`); the marked-up copy of the carrier's estimate (the full estimate reproduced with CCS's edits applied in-line — changes in the CCS edit color, a justification box under each) is the carrier-facing deliverable that shows every correction in context on the carrier's own estimate.
 
 ## How the skills relate
 
@@ -82,12 +82,13 @@ scope → line-item → completeness → related-items → type-of-loss
     ↓ each stage records its own deliverable in:
 outputs/stage-outputs/NN-slug.md  (all rolled into one live "audit findings" artifact)
     ↓ at end of audit
-claim-audit-finalizer (Sanity Audit → full XLSX export → final fact-check)
+claim-audit-finalizer (Sanity Audit → flag resolution → reason-box wording)
     └ invokes ─→ claim-pdf-annotator
-                 (the marked-up copy of the carrier's estimate — the end deliverable;
+                 (interpret → render pipeline + page-by-page visual verification;
+                  the marked-up copy of the carrier's estimate — the end deliverable;
                   also callable standalone any time)
     ↓ produces in outputs/:
-audit-suggestion-list.xlsx  +  [carrier-pdf-name]-annotated.pdf  (marked-up estimate)
+reason-wording.json  +  [carrier-pdf-name]-annotated.pdf  (marked-up estimate)
 
 claim-supplement-package  (superseded legacy Word document; not in the standard flow)
 
