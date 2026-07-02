@@ -26,7 +26,12 @@ Proceed only when both pass.
 
 - **The suggestion list** — `Read` `outputs/audit-suggestion-list.md`
 - **The carrier estimate PDF** — in the project folder root (it will be reproduced; the original stays untouched)
-- **The sample supplements** — any `sample supplement*.pdf` in the project folder (visual reference for what a correct render looks like)
+- **The sample supplements** — the three canonical reference renders, in the project folder:
+  - `Sample Supplement Xactimate-Green.pdf` — Xactimate carrier, green CCS edits
+  - `Sample Supplement Symbility-Terracotta.pdf` — Symbility carrier whose lines use green/teal, terracotta CCS edits
+  - `Sample Supplement Symbility-Green.pdf` — Symbility carrier with no green/teal, green CCS edits
+
+  These are ground truth for what a correct render looks like. For every visual comparison, use the sample matching the carrier's platform **and** the edit color the renderer chose; the other-platform sample is your reference for the format check in step 2. If a named sample is missing from the project folder, say so and ask for it before the verification loop.
 - **Confirmed reason wording** — `outputs/reason-wording.json`, if present (written by `claim-audit-finalizer`; maps suggestion `#` → the exact user-confirmed reason-box text)
 
 If the suggestion list or the carrier PDF is missing, use `AskUserQuestion` to gather the path and stop until provided.
@@ -65,7 +70,7 @@ If a rendering defect later requires editing a working copy, log the fix as a pr
 
 ### 2. Visually identify the platform (independent check)
 
-Before running anything, determine **by looking** whether the carrier estimate is Xactimate or Symbility — separate from the pipeline's own detection. Rasterize the first breakdown page of the carrier PDF and the first pages of the sample supplements (`page.get_pixmap()` via `bash`, then `Read` the images):
+Before running anything, determine **by looking** whether the carrier estimate is Xactimate or Symbility — separate from the pipeline's own detection. Rasterize the first breakdown page of the carrier PDF and the first breakdown pages of `Sample Supplement Xactimate-Green.pdf` and `Sample Supplement Symbility-Terracotta.pdf` (`page.get_pixmap()` via `bash`, then `Read` the images) — the carrier estimate will visibly match one family or the other:
 
 - **Symbility** — bare item numbers (`31`), room subtotal lines like `Bathroom - Subtotal (35 items)`, grey column stripes on Unit Price/ACV, grey room-header boxes with a sketch cell.
 - **Xactimate** — numbered items with periods (`186.`), `Totals: <Room>` lines, per-folder `QUANTITY  UNIT PRICE  TAX  GCO&P …` column headers, plain-text room headers with a left diagram.
@@ -103,7 +108,7 @@ The script prints the saved path and edit counts — read and relay them.
 Verify the output **by looking at it**, one page at a time, against the sources:
 
 1. Rasterize output page N (`get_pixmap`, `Read` the image).
-2. Rasterize the **matching carrier page(s)** — match by folder/item content, not page index (the reflow shifts pages) — and the relevant sample-supplement page for that construct (a corrected line, an add, a new room).
+2. Rasterize the **matching carrier page(s)** — match by folder/item content, not page index (the reflow shifts pages) — and the page showing the same construct (a corrected line, an add, a new room, a folder header) in the matching named sample: `Sample Supplement Xactimate-Green.pdf`, `Sample Supplement Symbility-Terracotta.pdf`, or `Sample Supplement Symbility-Green.pdf`, chosen by the carrier's platform and the edit color the renderer picked.
 3. Examine closely: folder title + dimension block + column header present and complete; spacing consistent with the surrounding folders; diagrams whole, not clipped; carrier text/figures identical to the original; CCS edits in the right field and color; a justification box under every edit; no overlapping or clipped text; page numbers sequential.
 4. Also run the mechanical cross-walk in `bash`: every carrier line item present in the output exactly once (count numbered items at the left margin in both), column-header rows paired on every breakdown page.
 5. Any issue found: fix it (the edit-plan JSON if the data is wrong; the working-copy script if the rendering is wrong — then log §2.16), re-render, and **restart this loop from page 1**.
