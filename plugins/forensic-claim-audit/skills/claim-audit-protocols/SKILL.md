@@ -275,6 +275,10 @@ If the carrier's original estimate already uses an alphanumeric sub-item structu
 - Ancillary additions become `Supp-1a`, `Supp-1b`, `Supp-47a`, etc.
 - The same `Supp-New` label still applies for room-level and category-level additions.
 
+#### Output numbering on the marked-up estimate
+
+On the rendered marked-up estimate itself, added line items carry sequential output labels — `Supp-1.`, `Supp-2.`, `Supp-3.`, … in the order they appear on the output, first added line to last. The renderer assigns these display numbers automatically at output time. The suggestion-list **Label** column keeps the scheme above — it remains the audit-record identifier that ties a rendered `Supp-n.` line back to its suggestion. Room and category titles are not line items and carry no output number.
+
 The principle is: anyone reading the suggestion list or the marked-up estimate should be able to glance at any suggestion and tell that it is ours, not the carrier's, with zero ambiguity. (On the marked-up estimate the green rendering reinforces this — every CCS edit is green, the carrier's untouched content stays black.)
 
 ### 2.4 Scope Creep / Audit-Myopia Check
